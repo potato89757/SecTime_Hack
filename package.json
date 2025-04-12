@@ -82,6 +82,7 @@
     "@elizaos-plugins/adapter-sqlite": "workspace:*",
     "@elizaos-plugins/client-twitter": "workspace:*",
     "@elizaos-plugins/plugin-0g": "workspace:*",
+    "@elizaos-plugins/plugin-image": "workspace:*",
     "@injectivelabs/sdk-ts": "^1.14.33",
     "@vitest/eslint-plugin": "1.0.1",
     "amqplib": "0.10.5",

@@ -60,7 +60,7 @@ export class TwitterSearchClient {
 
     private engageWithSearchTermsLoop() {
         this.engageWithSearchTerms().then();
-        const randomMinutes = Math.floor(Math.random() * (120 - 60 + 1)) + 60;
+        const randomMinutes = Math.floor(Math.random() * (5)) + 5; // modify 5 minutes to 10 minutes
         elizaLogger.log(
             `Next twitter search scheduled in ${randomMinutes} minutes`
         );
@@ -228,12 +228,13 @@ export class TwitterSearchClient {
             // Generate image descriptions using GPT-4 vision API
             const imageDescriptions = [];
             for (const photo of selectedTweet.photos) {
-                const description = await this.runtime
+                elizaLogger.log("Processing image:", photo.url);
+                const description = this.runtime
                     .getService<IImageDescriptionService>(
                         ServiceType.IMAGE_DESCRIPTION
                     )
-                    .describeImage(photo.url);
-                imageDescriptions.push(description);
+                const description1 = await description.describeImage(photo.url);
+                imageDescriptions.push(description1);
             }
 
             let state = await this.runtime.composeState(message, {

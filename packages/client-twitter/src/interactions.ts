@@ -351,12 +351,13 @@ export class TwitterInteractionClient {
         const imageDescriptionsArray = [];
         try{
             for (const photo of tweet.photos) {
-                const description = await this.runtime
+                elizaLogger.log("Processing image:", photo.url);
+                const description = this.runtime
                     .getService<IImageDescriptionService>(
                         ServiceType.IMAGE_DESCRIPTION
                     )
-                    .describeImage(photo.url);
-                imageDescriptionsArray.push(description);
+                const description1 = await description.describeImage(photo.url);
+                imageDescriptionsArray.push(description1);
             }
         } catch (error) {
     // Handle the error

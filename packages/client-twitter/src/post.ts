@@ -1446,12 +1446,13 @@ export class TwitterPostClient {
                                 "Processing images in tweet for context"
                             );
                             for (const photo of tweet.photos) {
-                                const description = await this.runtime
+                                elizaLogger.log("Processing image:", photo.url);
+                                const description = this.runtime
                                     .getService<IImageDescriptionService>(
                                         ServiceType.IMAGE_DESCRIPTION
                                     )
-                                    .describeImage(photo.url);
-                                imageDescriptions.push(description);
+                                const description1 = await description.describeImage(photo.url);
+                                imageDescriptions.push(description1);
                             }
                         }
 
@@ -1659,12 +1660,13 @@ export class TwitterPostClient {
             if (tweet.photos?.length > 0) {
                 elizaLogger.log("Processing images in tweet for context");
                 for (const photo of tweet.photos) {
-                    const description = await this.runtime
+                    elizaLogger.log("Processing image:", photo.url);
+                    const description = this.runtime
                         .getService<IImageDescriptionService>(
                             ServiceType.IMAGE_DESCRIPTION
                         )
-                        .describeImage(photo.url);
-                    imageDescriptions.push(description);
+                    const description1 = await description.describeImage(photo.url);
+                    imageDescriptions.push(description1);
                 }
             }
 
