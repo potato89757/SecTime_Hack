@@ -59,26 +59,31 @@ export class TwitterSearchClient {
     }
 
     async start() {
+        await this.refreshSearchTopics();
         this.refreshSearchTopicsLoop();
         this.engageWithSearchTermsLoop();
     }
 
     // new implementation
-    private async refreshSearchTopicsLoop() {
-        try{
-            const topics1 = await scrapeProjectUpdates();
-            const topics2 = await scrapeFundraisingProjects();
-            this.runtime.character.topics = Array.from(new Set([
-                ...this.runtime.character.topics,
-                ...topics1, 
-                ...topics2
-            ]));
-            elizaLogger.log("Search topics refreshed");
-            elizaLogger.log(`Character length of topics: ${this.runtime.character.topics.length}`);
-        } catch (error) {
-            elizaLogger.error("Error refreshing search topics:", error);
-        }
-        setTimeout(() => this.refreshSearchTopicsLoop(), 1000 * 60 * 60 * 24); // 24 hours
+    private async refreshSearchTopics() {
+    try {
+        const topics1 = await scrapeProjectUpdates();
+        const topics2 = await scrapeFundraisingProjects();
+        this.runtime.character.topics = Array.from(new Set([
+        ...this.runtime.character.topics,
+        ...topics1,
+        ...topics2
+        ]));
+        elizaLogger.log("Search topics initialized");
+    } catch (error) {
+        elizaLogger.error("Error initializing topics:", error);
+    }
+    }
+
+    private refreshSearchTopicsLoop() {
+    setInterval(() => {
+        this.refreshSearchTopics();
+    }, 1000 * 60 * 60 * 24); // 每24小时
     }
 
     private engageWithSearchTermsLoop() {
@@ -100,32 +105,18 @@ export class TwitterSearchClient {
                 this.searchIndex
             ];
 
-            elizaLogger.log("Fetching search tweets");
+            elizaLogger.log("Fetching search tweets:", searchTerm);
             // TODO: we wait 5 seconds here to avoid getting rate limited on startup, but we should queue
             await new Promise((resolve) => setTimeout(resolve, 5000));
             const recentTweets = await this.client.fetchSearchTweets(
                 searchTerm,
-                20,
-                SearchMode.Top
+                50,
+                SearchMode.Latest
             );
             elizaLogger.log("Search tweets fetched");
 
-            const homeTimeline = await this.client.fetchHomeTimeline(50);
-
-            await this.client.cacheTimeline(homeTimeline);
-
-            const formattedHomeTimeline =
-                `# ${this.runtime.character.name}'s Home Timeline\n\n` +
-                homeTimeline
-                    .map((tweet) => {
-                        return `ID: ${tweet.id}\nFrom: ${tweet.name} (@${tweet.username})${tweet.inReplyToStatusId ? ` In reply to: ${tweet.inReplyToStatusId}` : ""}\nText: ${tweet.text}\n---\n`;
-                    })
-                    .join("\n");
-
-            // randomly slice .tweets down to 20
+            // return all tweets (modify)
             const slicedTweets = recentTweets.tweets
-                .sort(() => Math.random() - 0.5)
-                .slice(0, 20);
 
             if (slicedTweets.length === 0) {
                 elizaLogger.log(
@@ -135,7 +126,7 @@ export class TwitterSearchClient {
                 return;
             }
 
-            const prompt = `
+/*            const prompt = `
   Here are some tweets related to the search term "${searchTerm}":
 
   ${[...slicedTweets, ...homeTimeline]
@@ -155,7 +146,7 @@ export class TwitterSearchClient {
   `
       )
       .join("\n")}
-
+      
   Which tweet is the most interesting and relevant for Ruby to reply to? Please provide only the ID of the tweet in your response.
   Notes:
     - Respond to Chinese tweets only
@@ -163,6 +154,23 @@ export class TwitterSearchClient {
     - Respond to tweets that are not retweets
     - Respond to tweets where there is an easy exchange of ideas to have with the user
     - ONLY respond with the ID of the tweet`;
+*/
+            const prompt = `
+                Here are some tweets:
+                ${slicedTweets
+                    .filter((tweet) => {
+                        // ignore tweets where any of the thread tweets contain a tweet by the bot
+                        const thread = tweet.thread;
+                        const botTweet = thread.find(
+                            (t) => t.username === this.twitterUsername
+                        );
+                        return !botTweet;
+                    }).map((tweet, i) => `Tweet ${i + 1}: ${tweet.text}`).join("\n")}
+
+                Which one is the most relevant to these topics: ${this.runtime.character.topics.join(", ")}?
+
+                Please return the index (1-based).
+            `;
 
             const mostInterestingTweetResponse = await generateText({
                 runtime: this.runtime,
@@ -170,12 +178,10 @@ export class TwitterSearchClient {
                 modelClass: ModelClass.SMALL,
             });
 
-            const tweetId = mostInterestingTweetResponse.trim();
-            const selectedTweet = slicedTweets.find(
-                (tweet) =>
-                    tweet.id.toString().includes(tweetId) ||
-                    tweetId.includes(tweet.id.toString())
-            );
+            /*--------- modify -----------*/
+            const tweetId = parseInt(mostInterestingTweetResponse.trim()) - 1;
+            const selectedTweet = slicedTweets[tweetId]; 
+            /*----------------------------*/
 
             if (!selectedTweet) {
                 elizaLogger.warn("No matching tweet found for the selected ID");
@@ -214,9 +220,9 @@ export class TwitterSearchClient {
                 content: {
                     text: selectedTweet.text,
                     url: selectedTweet.permanentUrl,
-                    inReplyTo: selectedTweet.inReplyToStatusId
+                    inReplyTo: selectedTweet.quotedStatusId
                         ? stringToUuid(
-                              selectedTweet.inReplyToStatusId +
+                              selectedTweet.quotedStatusId +
                                   "-" +
                                   this.runtime.agentId
                           )
@@ -263,7 +269,6 @@ export class TwitterSearchClient {
             let state = await this.runtime.composeState(message, {
                 twitterClient: this.client.twitterClient,
                 twitterUserName: this.twitterUsername,
-                timeline: formattedHomeTimeline,
                 tweetContext: `${tweetBackground}
 
   Original Post:
@@ -286,7 +291,7 @@ export class TwitterSearchClient {
             const responseContent = await generateMessageResponse({
                 runtime: this.runtime,
                 context,
-                modelClass: ModelClass.LARGE,
+                modelClass: ModelClass.SMALL,  // modify to small model
             });
 
             responseContent.inReplyTo = message.id;
@@ -303,7 +308,7 @@ export class TwitterSearchClient {
             );
 
             this.searchIndex = (this.searchIndex + 1) % this.runtime.character.topics.length;
-            
+            elizaLogger.log(`SelectedTweet ID: ${selectedTweet.id}`);
             try {
                 const callback: HandlerCallback = async (response: Content) => {
                     const memories = await sendTweet(

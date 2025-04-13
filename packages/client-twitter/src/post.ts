@@ -1,4 +1,4 @@
-import type { Tweet } from "agent-twitter-client";
+import { SearchMode, type Tweet } from "agent-twitter-client";
 import {
     composeContext,
     generateText,
@@ -64,24 +64,19 @@ export const twitterActionTemplate =
 
 Guidelines:
 - ONLY engage with content that DIRECTLY relates to character's core interests
-- Direct mentions are priority IF they are on-topic
-- Skip ALL content that is:
-  - Off-topic or tangentially related
-  - From high-profile accounts unless explicitly relevant
-  - Generic/viral content without specific relevance
-  - Political/controversial unless central to character
-  - Promotional/marketing unless directly relevant
+- Quote tweet ONLY IF:
+  - You can add insightful commentary or domain knowledge
+  - The tweet is about crypto/Web3/zk or high-value discussions
+
+All other actions like LIKE, REPLY, RETWEET should be ignored completely.
 
 Actions (respond only with tags):
-[LIKE] - Perfect topic match AND aligns with character (9.8/10)
-[RETWEET] - Exceptional content that embodies character's expertise (9.5/10)
 [QUOTE] - Can add substantial domain expertise (9.5/10)
-[REPLY] - Can contribute meaningful, expert-level insight (9.5/10)
 
 Tweet:
 {{currentTweet}}
 
-# Respond with qualifying action tags only. Default to NO action unless extremely confident of relevance.` +
+# Respond ONLY with [QUOTE] if highly relevant. Respond with nothing if irrelevant.` +
     postActionResponseFooter;
 
 interface PendingTweet {
@@ -108,6 +103,9 @@ export class TwitterPostClient {
     private approvalCheckInterval: number;
     private raiinmakerService: any | null = null;
     private approvalProvider: string;
+    // modify
+    private recentQuotes: {id: string, text: string}[] = [];
+    private searchIndex:number;
 
     constructor(client: ClientBase, runtime: IAgentRuntime) {
         elizaLogger.debug("🔍 TwitterPostClient constructor start");
@@ -115,6 +113,7 @@ export class TwitterPostClient {
         this.runtime = runtime;
         this.twitterUsername = this.client.twitterConfig.TWITTER_USERNAME;
         this.isDryRun = this.client.twitterConfig.TWITTER_DRY_RUN;
+        this.searchIndex = 0;
         // Explicit debug for approval provider
         const rawApprovalProvider = process.env.TWITTER_APPROVAL_PROVIDER;
         elizaLogger.debug(`🔍 Raw approval provider from settings: "${rawApprovalProvider}"`);
@@ -1000,8 +999,9 @@ export class TwitterPostClient {
     /**
      * Generates a new tweet, sends it for verification if required, or posts it directly
      */
+    // modify summary the latest three memories
     async generateNewTweet() {
-        elizaLogger.log("Generating new tweet");
+        elizaLogger.log("Generating new tweet based on recent memories");
 
         try {
             const roomId = stringToUuid(
@@ -1014,21 +1014,31 @@ export class TwitterPostClient {
                 "twitter"
             );
 
-            const topics = this.runtime.character.topics.join(", ");
-            const maxTweetLength = this.client.twitterConfig.MAX_TWEET_LENGTH;
+            const recentMemories = await this.runtime.messageManager.getMemories({
+                roomId: roomId,
+                count: 3,
+                unique: true,
+            });
+
+            if (!recentMemories || recentMemories.length === 0) {
+                elizaLogger.warn("No recent memories found for summarization");
+                return;
+            }
+
+            const combinedText = recentMemories.map((memory) => memory.content.text).join("\n\n");
             const state = await this.runtime.composeState(
                 {
                     userId: this.runtime.agentId,
                     roomId: roomId,
                     agentId: this.runtime.agentId,
                     content: {
-                        text: topics || "",
+                        text: combinedText || "",
                         action: "TWEET",
                     },
                 },
                 {
                     twitterUserName: this.client.profile.username,
-                    maxTweetLength,
+                    maxTweetLength: this.client.twitterConfig.MAX_TWEET_LENGTH,
                 }
             );
 
@@ -1086,10 +1096,10 @@ export class TwitterPostClient {
             }
 
             // Truncate the content to the maximum tweet length specified in the environment settings, ensuring the truncation respects sentence boundaries.
-            if (maxTweetLength) {
+            if (this.client.twitterConfig.MAX_TWEET_LENGTH) {
                 tweetTextForPosting = truncateToCompleteSentence(
                     tweetTextForPosting,
-                    maxTweetLength
+                    this.client.twitterConfig.MAX_TWEET_LENGTH
                 );
             }
 
@@ -1244,14 +1254,18 @@ export class TwitterPostClient {
                 "twitter"
             );
 
-            const timelines = await this.client.fetchTimelineForActions(
-                MAX_TIMELINES_TO_FETCH
+            // modify
+            // only search information from the character's topics
+            const timelines = await this.client.fetchSearchTweets(
+                this.runtime.character.topics[this.searchIndex],
+                MAX_TIMELINES_TO_FETCH,
+                SearchMode.Latest
             );
             const maxActionsProcessing =
                 this.client.twitterConfig.MAX_ACTIONS_PROCESSING;
             const processedTimelines = [];
 
-            for (const tweet of timelines) {
+            for (const tweet of timelines.tweets) {
                 try {
                     // Skip if we've already processed this tweet
                     const memory =

@@ -488,7 +488,7 @@ export class ClientBase extends EventEmitter {
 
                 // Save the missing tweets as memories
                 for (const tweet of tweetsToSave) {
-                    elizaLogger.log("Saving Tweet", tweet.id);
+                    elizaLogger.log("Saving Missing Tweet", tweet.id);
 
                     const roomId = stringToUuid(
                         tweet.conversationId + "-" + this.runtime.agentId
@@ -564,30 +564,18 @@ export class ClientBase extends EventEmitter {
                 return;
             }
         }
-
-        const timeline = await this.fetchHomeTimeline(cachedTimeline ? 10 : 50);
-        const username = this.twitterConfig.TWITTER_USERNAME;
-
-        // Get the most recent 20 mentions and interactions
-        const mentionsAndInteractions = await this.fetchSearchTweets(
-            `@${username}`,
-            20,
-            SearchMode.Latest
-        );
-
-        // Combine the timeline tweets and mentions/interactions
-        const allTweets = [...timeline, ...mentionsAndInteractions.tweets];
+        
+        //----------modify----------//
+        // Fetch own posts
+        const timeline = await this.fetchOwnPosts(cachedTimeline ? 10 : 50);
 
         // Create a Set to store unique tweet IDs
         const tweetIdsToCheck = new Set<string>();
         const roomIds = new Set<UUID>();
-
         // Add tweet IDs to the Set
-        for (const tweet of allTweets) {
+        for (const tweet of timeline) {
             tweetIdsToCheck.add(tweet.id);
-            roomIds.add(
-                stringToUuid(tweet.conversationId + "-" + this.runtime.agentId)
-            );
+            roomIds.add(stringToUuid(tweet.conversationId + "-" + this.runtime.agentId));
         }
 
         // Check the existing memories in the database
@@ -602,7 +590,7 @@ export class ClientBase extends EventEmitter {
         );
 
         // Filter out the tweets that already exist in the database
-        const tweetsToSave = allTweets.filter(
+        const tweetsToSave = timeline.filter(
             (tweet) =>
                 !existingMemoryIds.has(
                     stringToUuid(tweet.id + "-" + this.runtime.agentId)
@@ -627,28 +615,13 @@ export class ClientBase extends EventEmitter {
             const roomId = stringToUuid(
                 tweet.conversationId + "-" + this.runtime.agentId
             );
-            const userId =
-                tweet.userId === this.profile.id
-                    ? this.runtime.agentId
-                    : stringToUuid(tweet.userId);
-
-            if (tweet.userId === this.profile.id) {
-                await this.runtime.ensureConnection(
-                    this.runtime.agentId,
-                    roomId,
-                    this.profile.username,
-                    this.profile.screenName,
-                    "twitter"
-                );
-            } else {
-                await this.runtime.ensureConnection(
-                    userId,
-                    roomId,
-                    tweet.username,
-                    tweet.name,
-                    "twitter"
-                );
-            }
+            await this.runtime.ensureConnection(
+                this.runtime.agentId,
+                roomId,
+                this.profile.username,
+                this.profile.screenName,
+                "twitter"
+            );
 
             const content = {
                 text: tweet.text,
@@ -661,7 +634,7 @@ export class ClientBase extends EventEmitter {
 
             await this.runtime.messageManager.createMemory({
                 id: stringToUuid(tweet.id + "-" + this.runtime.agentId),
-                userId,
+                userId: this.runtime.agentId,
                 content: content,
                 agentId: this.runtime.agentId,
                 roomId,
@@ -674,7 +647,7 @@ export class ClientBase extends EventEmitter {
 
         // Cache
         await this.cacheTimeline(timeline);
-        await this.cacheMentions(mentionsAndInteractions.tweets);
+        //--------------------------//
     }
 
     async setCookiesFromArray(cookiesArray: any[]) {
