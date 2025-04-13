@@ -24,6 +24,7 @@
     "agent-twitter-client": "0.0.18",
     "discord.js": "14.16.3",
     "glob": "11.0.0",
+    "puppeteer": "^24.6.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

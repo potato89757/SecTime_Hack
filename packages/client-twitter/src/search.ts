@@ -14,6 +14,8 @@ import {
 import { stringToUuid } from "@elizaos/core";
 import type { ClientBase } from "./base";
 import { buildConversationThread, sendTweet, wait } from "./utils.ts";
+import { scrapeProjectUpdates } from "./rootdata/scrap_net.ts";
+import { scrapeFundraisingProjects } from "./rootdata/scrap_project.ts";
 
 const twitterSearchTemplate =
     `{{timeline}}
@@ -46,16 +48,37 @@ export class TwitterSearchClient {
     client: ClientBase;
     runtime: IAgentRuntime;
     twitterUsername: string;
+    searchIndex: number;
     private respondedTweets: Set<string> = new Set();
 
     constructor(client: ClientBase, runtime: IAgentRuntime) {
         this.client = client;
         this.runtime = runtime;
         this.twitterUsername = this.client.twitterConfig.TWITTER_USERNAME;
+        this.searchIndex = 0;
     }
 
     async start() {
+        this.refreshSearchTopicsLoop();
         this.engageWithSearchTermsLoop();
+    }
+
+    // new implementation
+    private async refreshSearchTopicsLoop() {
+        try{
+            const topics1 = await scrapeProjectUpdates();
+            const topics2 = await scrapeFundraisingProjects();
+            this.runtime.character.topics = Array.from(new Set([
+                ...this.runtime.character.topics,
+                ...topics1, 
+                ...topics2
+            ]));
+            elizaLogger.log("Search topics refreshed");
+            elizaLogger.log(`Character length of topics: ${this.runtime.character.topics.length}`);
+        } catch (error) {
+            elizaLogger.error("Error refreshing search topics:", error);
+        }
+        setTimeout(() => this.refreshSearchTopicsLoop(), 1000 * 60 * 60 * 24); // 24 hours
     }
 
     private engageWithSearchTermsLoop() {
@@ -69,12 +92,12 @@ export class TwitterSearchClient {
             randomMinutes * 60 * 1000
         );
     }
-
+    
     private async engageWithSearchTerms() {
         elizaLogger.log("Engaging with search terms");
         try {
             const searchTerm = [...this.runtime.character.topics][
-                Math.floor(Math.random() * this.runtime.character.topics.length)
+                this.searchIndex
             ];
 
             elizaLogger.log("Fetching search tweets");
@@ -278,6 +301,9 @@ export class TwitterSearchClient {
             elizaLogger.log(
                 `Bot would respond to tweet ${selectedTweet.id} with: ${response.text}`
             );
+
+            this.searchIndex = (this.searchIndex + 1) % this.runtime.character.topics.length;
+            
             try {
                 const callback: HandlerCallback = async (response: Content) => {
                     const memories = await sendTweet(
