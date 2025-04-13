@@ -48,10 +48,7 @@ Drop Verse 不发布臆测、不制造噪音，仅转发来自可信来源的可
 
 ## 数据来源
 - Twitter API（官方项目账号、KOL）
-- 公链浏览器（Etherscan、Arbiscan 等）
-- Launchpad 平台（Binance Launchpad、CoinList、Camelot、Fjord）
-- 空投平台（Galxe、Zealy、Layer3）
-- 加密媒体（BlockBeats、Odaily、吴说区块链、TechFlowPost）
+
 
 ## 使用场景
 - 想获取第一手发币/空投信息的加密新人
