@@ -1,78 +1,106 @@
-【TGE 是什么】
-TGE,全称 Token Generation Event,是指一个加密项目正式生成代币并分发给用户的事件。它通常意味着项目进入主网阶段,是代币上线的关键动作。
-
-TGE 不等同于上交易所,不代表可以立即交易。它可以与公售同时发生,也可以在发币后才开始上所。
+【用途说明】
+本知识模块用于训练 AI Agent 识别项目是否即将 TGE（发币）或空投，结合多个来源（如官方动态、链上合约、媒体同步、任务平台等）进行多角度验证。Agent 依据信号强度与信息来源可靠性判断哪些项目具备即将 TGE/空投的高概率，避免盲目推送，确保每条预测均具逻辑支撑。
 
 ---
 
-【公售 / IDO / ICO 的区别】
+【核心概念定义】
 
-1. ICO(Initial Coin Offering):
-最早期的发币方式,项目直接向公众出售代币,常常缺乏监管,风险较高。
-
-2. IDO(Initial DEX Offering):
-项目在去中心化交易所(如 Uniswap、PancakeSwap)上进行代币发售,通常通过 Launchpad 平台。
-
-3. 公售(Public Sale):
-一种面向社区开放的发币方式,可以是 ICO、IDO、IEO 等形式之一。它意味着普通用户可以参与,不限于私募投资者。
+- TGE（Token Generation Event）: 项目正式生成代币并开始分发的时间点，通常为代币上线前的关键阶段。
+- 公售（Public Sale）: 用户公开参与的代币认购过程，可能以 ICO、IDO、IEO 等形式进行。
+- 空投（Airdrop）: 项目免费将代币分发给特定用户，作为回馈、激励或营销行为。
 
 ---
 
-【什么是空投】
-空投(Airdrop)是项目方将部分代币免费分发给特定用户的一种奖励机制。常见目的是扩大项目影响力、激励交互用户、回馈早期支持者。
+【TGE、空投、公售的区别】
+
+| 类型  | 是否花钱 | 目的         | 举例平台                 |
+|-------|----------|--------------|--------------------------|
+| TGE   | 否       | 上线与分发   | 合约部署、Token上线     |
+| 公售  | 是       | 募资与分发   | Binance、Camelot 等     |
+| 空投  | 否       | 激励与推广   | 交互、排行榜、Claim 页面 |
 
 ---
 
-【常见空投类型】
+【判断项目是否即将 TGE / 空投的“强信号”】
 
-- 交互型空投:用户需完成链上操作,如交易、质押、桥接等;
-- 社区型空投:用户需关注Twitter、加入Discord、完成问卷等;
-- Retroactive 空投(追溯型):项目在没有提前通知的情况下,奖励曾参与交互的用户;
-- 积分系统空投:用户在产品中累积积分,后续换取代币;
+✅ 以下行为同时满足 ≥3 项时，Agent 可判断该项目即将发币：
 
----
+1. **官方已公布 TGE / Claim 日期**
+   - 在 Twitter / Medium 明确写出时间或流程
 
-【Claim 是什么】
-Claim 是指用户在空投发放阶段,进入官方页面,通过连接钱包领取代币。通常需支付少量 gas 费。
+2. **Launchpad 页面上线**
+   - 如 Binance、CoinList、Camelot 显示认购时间与发币规则
 
----
+3. **Token 合约已部署**
+   - 链上出现代币合约、Claim Router、MerkleDistributor 等
 
-【空投规则常见要素】
+4. **教程类推文同步出现**
+   - 如“空投教程”、“Claim 教程”、“领取流程”等内容由可信 KOL 发布
 
-- 快照时间:记录资格的时间点;
-- 链上交互:交互质量与频率往往影响分配权重;
-- 黑名单机制:项目可能会排除 Sybil(女巫攻击)或滥用行为;
-- 是否强制绑定社媒账号(如 X / Discord / 邮箱);
+5. **任务平台更新配合**
+   - Galxe / Zealy 等同步任务积分结算或快照公告
 
----
+6. **KOL + 媒体同步发布**
+   - 如 @BlockBeatsAsia 与 @BiteyeCN 同时转发或写教程分析
 
-【TGE vs 空投 vs 公售】
-
-| 项目        | 含义                           | 是否花钱 | 目的                     |
-|-------------|--------------------------------|----------|--------------------------|
-| TGE         | 项目正式发币并分发              | 否       | 项目启动/代币上线       |
-| 公售        | 用户购买代币的公开轮次           | 是       | 募资 + 建立初步流动性   |
-| 空投        | 项目免费发币给用户               | 否       | 激励、活跃、扩大影响力   |
+7. **DEX 预部署流动性池**
+   - 可在 Uniswap / Camelot 等链上看到新增交易对或初始化交易事件
 
 ---
 
-【用户该怎么准备】
+【判断项目“可能发币”但仍需观察的信号】
 
-1. 持有基础链的 gas 代币(ETH、BNB、MATIC等);
-2. 使用非托管钱包(如 MetaMask、OKX Web3 钱包);
-3. 积极参与链上交互,避免纯投机行为;
-4. 多关注 KOL 和专业空投媒体的教程与快讯;
-5. 了解常见骗局,避免假空投页面和钓鱼合约;
+🚩 仅满足以下 1-2 项时，不建议立即推送，仅归档并持续追踪：
+
+- 官方仅提到“有发币计划”，未公开合约 / 平台;
+- 项目宣布完成融资但未披露 Tokenomics;
+- 社区出现 Claim 流言，但官方未证实;
+- 推文内容为“猜测型”，无合约地址、参与规则等实证信息;
 
 ---
 
-【优质信息源】
+【判断项目是否“画饼”拖延发币】
 
-- 中文媒体:@BlockBeatsAsia、@OdailyChina、@wublockchain12、@TechFlowPost 
-- 安全预警:@GoPlusSecurity 
-- 教程参考:@BiteyeCN、@SoSoValue_CN、@followin_io_zh
-- 空投快讯:@AirdropAlert、@AirdropFind、@AirdropTracker
-- 项目方:@DeFiLlama、@DefiLlama、@DefiLlama
-- 交易所:@Binance、@OKX、@Bybit
-- 钱包:@MetaMask、@OKX、@Bybit
-- 安全:@GoPlusSecurity、@CertiK、@SlowMist
+⚠️ 出现以下情况时，Agent 应保持审慎，避免误导用户参与：
+
+- 官方一再声称“不发币”或拒绝回答 Token 计划;
+- 任务平台积分累计后长时间未结算或转换;
+- 投资方仅为 logo 拼接，查无任何融资信息来源;
+- 合约未部署、无上线日期、也无 Launchpad 信息;
+
+---
+
+【Agent 判断与行为建议】
+
+📢 若出现强信号（如合约部署 + Launchpad 公告 + 媒体教程同步）→ Agent 可直接发布推文，建议语气为【专业 + 冷静】。
+
+👀 若仅出现模糊迹象（如仅是融资、无教程、无Claim）→ Agent 可提示用户保持关注，但不生成预测或教程内容。
+
+🚨 若出现假空投、未开源合约、钓鱼网站 → Agent 应立即发预警。
+
+---
+
+【高频信息源推荐】（用于交叉验证）
+
+官方来源：
+- 项目 Twitter、Medium、Discord、Telegram
+
+媒体 / KOL：
+- @BlockBeatsAsia、@OdailyChina、@BiteyeCN、@wublockchain12、@SoSoValue_CN
+
+任务平台：
+- Galxe、Zealy
+
+链上合约：
+- Etherscan、Arbiscan、ZkSync Explorer、BaseScan
+
+Launchpad：
+- Binance Launchpad、CoinList、Fjord、Camelot、DAO Maker、OKX Jumpstart
+
+---
+
+【知识应用场景】
+- Agent 每日监控链上合约部署 + 官方社媒信号 + KOL 教程 + Launchpad 公告
+- 满足 ≥3 信号则生成【高可信度预测】，否则归档监控
+- 所有判断基于数据，不凭猜测或模型幻觉
+
