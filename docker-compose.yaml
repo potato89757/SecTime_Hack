@@ -1,0 +1,38 @@
+services:
+  eliza:
+    command:
+    - /bin/sh
+    - -c
+    - |-
+      cd /app
+      pnpm run start --non-interactive --character=characters/dropVerseCN.character.json
+    container_name: eliza
+    environment:
+      ACTION_TIMELINE_TYPE: ${ACTION_TIMELINE_TYPE}
+      CHARACTER_DATA: ${CHARACTER_DATA}
+      EMBEDDING_OPENAI_MODEL: ${EMBEDDING_OPENAI_MODEL}
+      IMAGE_OPENAI_MODEL: ${IMAGE_OPENAI_MODEL}
+      LARGE_OPENAI_MODEL: ${LARGE_OPENAI_MODEL}
+      MEDIUM_OPENAI_MODEL: ${MEDIUM_OPENAI_MODEL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_API_URL: ${OPENAI_API_URL}
+      SMALL_OPENAI_MODEL: ${SMALL_OPENAI_MODEL}
+      TWITTER_2FA_SECRET: ${TWITTER_2FA_SECRET}
+      TWITTER_COOKIES_AUTH_TOKEN: ${TWITTER_COOKIES_AUTH_TOKEN}
+      TWITTER_COOKIES_CT0: ${TWITTER_COOKIES_CT0}
+      TWITTER_COOKIES_GUEST_ID: ${TWITTER_COOKIES_GUEST_ID}
+      TWITTER_EMAIL: ${TWITTER_EMAIL}
+      TWITTER_PASSWORD: ${TWITTER_PASSWORD}
+      TWITTER_POLL_INTERVAL: ${TWITTER_POLL_INTERVAL}
+      TWITTER_RETRY_LIMIT: ${TWITTER_RETRY_LIMIT}
+      TWITTER_SEARCH_ENABLE: ${TWITTER_SEARCH_ENABLE}
+      TWITTER_USERNAME: ${TWITTER_USERNAME}
+    image: potato89757/drop-verse:v1
+    ports:
+    - 3000:3000
+    restart: always
+    volumes:
+    - /var/run/tappd.sock:/var/run/tappd.sock
+    - tee:/app/db.sqlite
+volumes:
+  tee:

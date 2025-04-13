@@ -96,6 +96,19 @@
     "ws": "8.18.0",
     "zod": "3.24.2"
   },
+  "trustedDependencies": [
+    "@swc/core",
+    "bigint-buffer",
+    "bufferutil",
+    "bun",
+    "canvas",
+    "esbuild",
+    "husky",
+    "node-llama-cpp",
+    "protobufjs",
+    "sharp",
+    "utf-8-validate"
+  ],
   "packageManager": "pnpm@9.15.7",
   "workspaces": [
     "packages/*"

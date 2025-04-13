@@ -52,9 +52,13 @@ const twitterPostTemplate = `
 {{postDirections}}
 
 # Task: Generate a post in the voice and style and perspective of {{agentName}} @{{twitterUserName}}.
+所有输出必须为中文，且仅包含简体中文字符。
+
+如果生成的内容具有广告性质（例如包含促销、产品推荐、购买链接、品牌口号等），则返回空字符串 ""。空字符串也是一个有效返回。
+
 Write a post that is {{adjective}} about {{topic}} (without mentioning {{topic}} directly), from the perspective of {{agentName}}. Do not add commentary or acknowledge this request, just write the post.
 Your response should be 1, 2, or 3 sentences (choose the length at random).
-Your response should not contain any questions. Brief, concise statements only. The total character count MUST be less than {{maxTweetLength}}. No emojis. Use \\n\\n (double spaces) between statements if there are multiple statements in your response.`;
+Your response should not contain any questions. Brief, concise statements only. The total character count MUST be less than {{maxTweetLength}}. No emojis. Use \\n\\n (double space) between statements if there are multiple statements in your response.`;
 
 export const twitterActionTemplate =
     `
@@ -1005,7 +1009,7 @@ export class TwitterPostClient {
 
         try {
             const roomId = stringToUuid(
-                "twitter_generate_room-" + this.client.profile.username
+                "twitter_generate_room-" + this.runtime.agentId
             );
             await this.runtime.ensureUserExists(
                 this.runtime.agentId,
@@ -1013,19 +1017,27 @@ export class TwitterPostClient {
                 this.runtime.character.name,
                 "twitter"
             );
-
-            const recentMemories = await this.runtime.messageManager.getMemories({
+    
+            const allMemories = await this.runtime.messageManager.getMemories({
                 roomId: roomId,
-                count: 3,
                 unique: true,
             });
-
-            if (!recentMemories || recentMemories.length === 0) {
-                elizaLogger.warn("No recent memories found for summarization");
+            
+            elizaLogger.log(`All memories: ${JSON.stringify(allMemories)}`);
+            const filteredQuotes = allMemories
+                .filter((m) => m.content.action?.includes("quote"))
+                .sort((a, b) => b.createdAt - a.createdAt)
+                .slice(0, 3); 
+    
+            if (filteredQuotes.length < 3) {
+                elizaLogger.log(
+                    "Not enough quote tweets since last post, falling back to default tweet"
+                );
                 return;
             }
 
-            const combinedText = recentMemories.map((memory) => memory.content.text).join("\n\n");
+            const combinedText = filteredQuotes.map((memory) => memory.content.text).join("\n\n");
+            elizaLogger.log(`Combined text: ${combinedText}`);
             const state = await this.runtime.composeState(
                 {
                     userId: this.runtime.agentId,
@@ -1042,11 +1054,17 @@ export class TwitterPostClient {
                 }
             );
 
+            const twitterSummaryTemplate = `
+                你是一个加密行业资讯总结助手，请根据当前提供的推文内容（包含多条推文），输出简洁、专业、条理清晰的中文摘要，总结要点如下要求：
+                •	总结格式为三段，每段前加 emoji 开头，简要说明该推文主题
+                •	每段文字不超过60字,重点突出事件背景和作者评论立场
+                •	语言风格中立、专业，适当引导用户关注项目潜力或风险
+                •	不要逐字复述推文内容，要提炼重点，表达作者传达的核心意思
+                请基于${combinedText}生成总结
+            `; 
             const context = composeContext({
                 state,
-                template:
-                    this.runtime.character.templates?.twitterPostTemplate ||
-                    twitterPostTemplate,
+                template: twitterSummaryTemplate
             });
 
             const response = await generateText({
@@ -1256,17 +1274,22 @@ export class TwitterPostClient {
 
             // modify
             // only search information from the character's topics
+
+            elizaLogger.log("Searching for tweets with topic:", this.runtime.character.topics[this.searchIndex]);
             const timelines = await this.client.fetchSearchTweets(
                 this.runtime.character.topics[this.searchIndex],
                 MAX_TIMELINES_TO_FETCH,
                 SearchMode.Latest
             );
-            const maxActionsProcessing =
-                this.client.twitterConfig.MAX_ACTIONS_PROCESSING;
+
+            const filteredTweets = timelines.tweets.filter(t => t.inReplyToStatusId == null && t.conversationId === t.id);
+            const maxActionsProcessing =this.client.twitterConfig.MAX_ACTIONS_PROCESSING;
             const processedTimelines = [];
 
-            for (const tweet of timelines.tweets) {
+            for (const t of filteredTweets) {
+                let tweet = t;
                 try {
+                    elizaLogger.log("Processing tweet:", tweet.text);
                     // Skip if we've already processed this tweet
                     const memory =
                         await this.runtime.messageManager.getMemoryById(
@@ -1278,7 +1301,7 @@ export class TwitterPostClient {
                         );
                         continue;
                     }
-
+                    
                     const roomId = stringToUuid(
                         tweet.conversationId + "-" + this.runtime.agentId
                     );
@@ -1316,11 +1339,14 @@ export class TwitterPostClient {
                         );
                         continue;
                     }
+
+                    const viewCount = tweet.views ?? 0;
                     processedTimelines.push({
                         tweet: tweet,
                         actionResponse: actionResponse,
                         tweetState: tweetState,
                         roomId: roomId,
+                        viewCount: viewCount,
                     });
                 } catch (error) {
                     elizaLogger.error(
@@ -1330,19 +1356,13 @@ export class TwitterPostClient {
                     continue;
                 }
             }
-
+            
+            // modify (sort by view's count)
             const sortProcessedTimeline = (arr: typeof processedTimelines) => {
                 return arr.sort((a, b) => {
-                    // Count the number of true values in the actionResponse object
-                    const countTrue = (obj: typeof a.actionResponse) =>
-                        Object.values(obj).filter(Boolean).length;
-
-                    const countA = countTrue(a.actionResponse);
-                    const countB = countTrue(b.actionResponse);
-
-                    // Primary sort by number of true values
-                    if (countA !== countB) {
-                        return countB - countA;
+                    // Count the number of true values in the tweet's views
+                    if (a.viewCount !== b.viewCount) {
+                        return b.viewCount - a.viewCount;
                     }
 
                     // Secondary sort by the "like" property
@@ -1472,9 +1492,10 @@ export class TwitterPostClient {
 
                         // Handle quoted tweet if present
                         let quotedContent = "";
+                        let quotedTweet;
                         if (tweet.quotedStatusId) {
                             try {
-                                const quotedTweet =
+                                quotedTweet =
                                     await this.client.twitterClient.getTweet(
                                         tweet.quotedStatusId
                                     );
@@ -1573,6 +1594,30 @@ export class TwitterPostClient {
                                     `twitter/quote_generation_${tweet.id}.txt`,
                                     `Context:\n${enrichedState}\n\nGenerated Quote:\n${quoteContent}`
                                 );
+
+                                await this.runtime.messageManager.createMemory({
+                                    id: stringToUuid(tweet.id + "-" + this.runtime.agentId),
+                                    userId: stringToUuid(tweet.userId),
+                                    roomId: stringToUuid(
+                                        "twitter_generate_room-" + this.client.profile.username),
+                                    content: {
+                                        text: tweet.text,
+                                        url: tweet.permanentUrl,
+                                        source: "twitter",
+                                        action: "quote",
+                                        metadata: {
+                                            quotedTweetText: quotedTweet?.text || "",
+                                            quotedTweetUser: quotedTweet?.username || "",
+                                            quotedTweetUrl: quotedTweet
+                                                ? `https://twitter.com/${quotedTweet.username}/status/${quotedTweet.id}`
+                                                : "",
+                                        }
+                                    },
+                                    agentId: this.runtime.agentId,
+                                    embedding: getEmbeddingZeroVector(),
+                                    createdAt: tweet.timestamp,
+                                });
+
                             } else {
                                 elizaLogger.error(
                                     "Quote tweet creation failed:",
@@ -1630,7 +1675,7 @@ export class TwitterPostClient {
                         agentId: this.runtime.agentId,
                         roomId,
                         embedding: getEmbeddingZeroVector(),
-                        createdAt: tweet.timestamp * 1000,
+                        createdAt: tweet.timestamp,
                     });
                 }
 

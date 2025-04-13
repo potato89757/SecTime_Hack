@@ -24,7 +24,8 @@ RUN npm install -g pnpm@9.15.4 && \
     libpango1.0-dev \
     libgif-dev \
     openssl \
-    libssl-dev libsecret-1-dev && \
+    libssl-dev \
+    libsecret-1-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

@@ -1,5 +1,5 @@
 import { SearchMode } from "agent-twitter-client";
-import { composeContext, elizaLogger } from "@elizaos/core";
+import { composeContext, elizaLogger, getEmbeddingZeroVector, Memory } from "@elizaos/core";
 import { generateMessageResponse, generateText } from "@elizaos/core";
 import { messageCompletionFooter } from "@elizaos/core";
 import {
@@ -37,8 +37,9 @@ About {{agentName}} (@{{twitterUserName}}):
 # Task: Respond to the following post in the style and perspective of {{agentName}} (aka @{{twitterUserName}}). Write a {{adjective}} response for {{agentName}} to say directly in response to the post. don't generalize.
 {{currentPost}}
 
-IMPORTANT: Your response CANNOT be longer than 20 words.
-Aim for 1-2 short sentences maximum. Be concise and direct.
+# make a summary of the post
+确保内容是Web3，空投，空投教程，IDO，ICO。如果是其他内容，请忽略。
+最后返回的摘要，请用中文输出。
 
 Your response should not contain any questions. Brief, concise statements only. No emojis. Use \\n\\n (double spaces) between statements.
 
@@ -88,7 +89,7 @@ export class TwitterSearchClient {
 
     private engageWithSearchTermsLoop() {
         this.engageWithSearchTerms().then();
-        const randomMinutes = Math.floor(Math.random() * (5)) + 5; // modify 5 minutes to 10 minutes
+        const randomMinutes = Math.floor(Math.random() * (5)) + 10; // modify 10 minutes to 15 minutes
         elizaLogger.log(
             `Next twitter search scheduled in ${randomMinutes} minutes`
         );
@@ -105,18 +106,19 @@ export class TwitterSearchClient {
                 this.searchIndex
             ];
 
-            elizaLogger.log("Fetching search tweets:", searchTerm);
             // TODO: we wait 5 seconds here to avoid getting rate limited on startup, but we should queue
             await new Promise((resolve) => setTimeout(resolve, 5000));
             const recentTweets = await this.client.fetchSearchTweets(
                 searchTerm,
-                50,
-                SearchMode.Latest
+                30,
+                SearchMode.Top
             );
             elizaLogger.log("Search tweets fetched");
 
             // return all tweets (modify)
             const slicedTweets = recentTweets.tweets
+            elizaLogger.log("Sliced tweets:", slicedTweets);
+            elizaLogger.log("Fetching search tweets:", searchTerm);
 
             if (slicedTweets.length === 0) {
                 elizaLogger.log(
@@ -165,11 +167,17 @@ export class TwitterSearchClient {
                             (t) => t.username === this.twitterUsername
                         );
                         return !botTweet;
-                    }).map((tweet, i) => `Tweet ${i + 1}: ${tweet.text}`).join("\n")}
+                    }).map(
+                        (tweet) => `
+                  ID: ${tweet.id}${tweet.quotedStatusId ? ` In reply to: ${tweet.quotedStatusId}` : ""}
+                  From: ${tweet.name} (@${tweet.username})
+                  Text: ${tweet.text}
+                `
+                    ).join("\n")}
 
-                Which one is the most relevant to these topics: ${this.runtime.character.topics.join(", ")}?
+                Which one is the most relevant to these topics: Web3,空投,空投教程,IDO,ICO,${this.runtime.character.topics[this.searchIndex]}?
 
-                Please return the index (1-based).
+                Please return the index (1-based), only return the index, no other text.
             `;
 
             const mostInterestingTweetResponse = await generateText({
@@ -178,9 +186,11 @@ export class TwitterSearchClient {
                 modelClass: ModelClass.SMALL,
             });
 
+            elizaLogger.log("Most interesting tweet response:", mostInterestingTweetResponse);
             /*--------- modify -----------*/
-            const tweetId = parseInt(mostInterestingTweetResponse.trim()) - 1;
+            const tweetId = parseInt(mostInterestingTweetResponse.trim());
             const selectedTweet = slicedTweets[tweetId]; 
+            elizaLogger.log("Selected tweet:", selectedTweet);
             /*----------------------------*/
 
             if (!selectedTweet) {
@@ -307,18 +317,41 @@ export class TwitterSearchClient {
                 `Bot would respond to tweet ${selectedTweet.id} with: ${response.text}`
             );
 
+            // modify
             this.searchIndex = (this.searchIndex + 1) % this.runtime.character.topics.length;
             elizaLogger.log(`SelectedTweet ID: ${selectedTweet.id}`);
+            // modify
+            // send quote tweet
             try {
                 const callback: HandlerCallback = async (response: Content) => {
-                    const memories = await sendTweet(
-                        this.client,
-                        response,
-                        message.roomId,
-                        this.twitterUsername,
-                        selectedTweet.id
+                    const result = await this.client.requestQueue.add(
+                        async () =>
+                            await this.client.twitterClient.sendQuoteTweet(
+                                response.text,
+                                selectedTweet.id
+                            )
                     );
-                    return memories;
+                    const body = await result.json();
+                    const tweetResult = body?.data?.create_tweet?.tweet_results?.result;
+                    if (!tweetResult){
+                        elizaLogger.error("Failed to create quote tweet:", body);
+                        return [];
+                    }
+                    const memory: Memory = {
+                        id: stringToUuid(tweetResult.rest_id + "-" + this.runtime.agentId),
+                        userId: this.runtime.agentId,
+                        agentId: this.runtime.agentId,
+                        roomId: message.roomId,
+                        content: {
+                            text: response.text,
+                            url: `https://twitter.com/${this.twitterUsername}/status/${tweetResult.rest_id}`,
+                            source: "twitter",
+                            action: "quote",
+                        },
+                        createdAt: Date.now(),
+                        embedding: getEmbeddingZeroVector()
+                    };
+                    return [memory];
                 };
 
                 const responseMessages = await callback(responseContent);
