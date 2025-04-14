@@ -1559,6 +1559,7 @@ export class TwitterPostClient {
                             return;
                         }
 
+                        
                         elizaLogger.log(
                             "Generated quote tweet content:",
                             quoteContent
