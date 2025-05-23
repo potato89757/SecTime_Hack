@@ -2,6 +2,7 @@
 import puppeteer from 'puppeteer';
 
 export async function scrapeProjectUpdates(): Promise<string[]> {
+  // ------ no use -------- //
   const url = 'https://www.rootdata.com/rankings/projectupdates';
   const titles = ['New MainNet Launches', 'New TestNet Launches'];
   const result: string[] = [];
@@ -37,10 +38,11 @@ export async function scrapeProjectUpdates(): Promise<string[]> {
   } finally {
     await browser.close();
   }
+  // ------ no use -------- //
 
   result.length = 0;
   
-  // 以下是结果
+  // make sure have result
   result.push("SGOLD_FUN", "jackson_app", "xocietyofficial", "ikadotxyz", "AmbrusStudio", "WalrusProtocol",
     "astros_ag", "DungeonMove", "hokko_io", "Project_Jcard", "nami_hq", "Magma_Finance",
     "SuiRWA", "MetaStables", "SeedCombinator", "WaveOnSui", "wansuifun", "springsui_",

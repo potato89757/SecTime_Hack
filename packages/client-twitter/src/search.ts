@@ -15,7 +15,7 @@ import { stringToUuid } from "@elizaos/core";
 import type { ClientBase } from "./base";
 import { buildConversationThread, sendTweet, wait } from "./utils.ts";
 import { scrapeProjectUpdates } from "./rootdata/scrap_net.ts";
-import { scrapeSuiProject } from "./rootdata/scrap_project_detail.ts"
+import { scrapeSuiTwitterUsernames } from "./rootdata/scrap_project_detail.ts"
 
 
 const twitterSearchTemplate =
@@ -77,12 +77,12 @@ export class TwitterSearchClient {
     // new implementation
     private async refreshSearchTopics() {
         try {
-            const topics1 = await scrapeSuiProject();
-            //const topics2 = await scrapeFundraisingProjects();
+            const topics1 = await scrapeSuiTwitterUsernames();
+            const topics2 = await scrapeProjectUpdates();
             this.runtime.character.topics = Array.from(new Set([
             ...this.runtime.character.topics,
             ...topics1,
-            //...topics2
+            ...topics2
             ]));
             elizaLogger.log("Search topics initialized");
             
