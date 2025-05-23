@@ -15,7 +15,8 @@ import {
     elizaLogger,
     getEmbeddingZeroVector,
     type IImageDescriptionService,
-    ServiceType
+    ServiceType,
+    generateText
 } from "@elizaos/core";
 import type { ClientBase } from "./base";
 import { buildConversationThread, sendTweet, wait } from "./utils.ts";
@@ -349,23 +350,18 @@ export class TwitterInteractionClient {
             .join("\n\n");
 
         const imageDescriptionsArray = [];
-        try{
+        try {
             for (const photo of tweet.photos) {
-                elizaLogger.log("Processing image:", photo.url);
-                const description = this.runtime
+                const description = await this.runtime
                     .getService<IImageDescriptionService>(
                         ServiceType.IMAGE_DESCRIPTION
                     )
-                const description1 = await description.describeImage(photo.url);
-                imageDescriptionsArray.push(description1);
+                    .describeImage(photo.url);
+                imageDescriptionsArray.push(description);
             }
         } catch (error) {
-    // Handle the error
-    elizaLogger.error("Error Occured during describing image: ", error);
-}
-
-
-
+            elizaLogger.error("Error occurred during describing image: ", error);
+        }
 
         let state = await this.runtime.composeState(message, {
             twitterClient: this.client.twitterClient,
@@ -373,51 +369,135 @@ export class TwitterInteractionClient {
             currentPost,
             formattedConversation,
             imageDescriptions: imageDescriptionsArray.length > 0
-            ? `\nImages in Tweet:\n${imageDescriptionsArray.map((desc, i) =>
-              `Image ${i + 1}: Title: ${desc.title}\nDescription: ${desc.description}`).join("\n\n")}`:""
+                ? `\nImages in Tweet:\n${imageDescriptionsArray.map((desc, i) =>
+                    `Image ${i + 1}: Title: ${desc.title}\nDescription: ${desc.description}`).join("\n\n")}` : ""
         });
 
-        // check if the tweet exists, save if it doesn't
-        const tweetId = stringToUuid(tweet.id + "-" + this.runtime.agentId);
-        const tweetExists =
-            await this.runtime.messageManager.getMemoryById(tweetId);
+        // Check if this is a mention
+        const isMention = tweet.text.toLowerCase().includes(`@${this.client.twitterConfig.TWITTER_USERNAME}`);
+        
+        if (isMention) {
+            // For mentions, analyze content and potentially forward
+            const fullContent = `${tweet.text}\n${imageDescriptionsArray.length > 0 ? 
+                `\nImages in Tweet:\n${imageDescriptionsArray.map((desc, i) => 
+                    `Image ${i + 1}: ${desc}`).join("\n")}` : ""}`;
 
-        if (!tweetExists) {
-            elizaLogger.log("tweet does not exist, saving");
-            const userIdUUID = stringToUuid(tweet.userId as string);
-            const roomId = stringToUuid(tweet.conversationId);
+            const analysisPrompt = `
+                Analyze this tweet and determine if it meets the following criteria:
+                1. Contains valuable information about Sui ecosystem
+                2. Is accurate and factual
+                3. Does not contain promotional content or ads
+                4. Is not a meme or low-quality content
+                
+                Tweet content: ${fullContent}
+                
+                Return a JSON object with the following structure:
+                {
+                    "isRelevant": boolean,
+                    "reason": string,
+                    "summary": string
+                }
+            `;
 
-            const message = {
-                id: tweetId,
-                agentId: this.runtime.agentId,
-                content: {
-                    text: tweet.text,
-                    url: tweet.permanentUrl,
-                    imageUrls: tweet.photos?.map(photo => photo.url) || [],
-                    inReplyTo: tweet.inReplyToStatusId
-                        ? stringToUuid(
-                              tweet.inReplyToStatusId +
-                                  "-" +
-                                  this.runtime.agentId
-                          )
-                        : undefined,
-                },
-                userId: userIdUUID,
-                roomId,
-                createdAt: tweet.timestamp * 1000,
-            };
-            this.client.saveRequestMessage(message, state);
+            const analysisResponse = await generateText({
+                runtime: this.runtime,
+                context: analysisPrompt,
+                modelClass: ModelClass.SMALL,
+            });
+
+            try {
+                const analysis = JSON.parse(analysisResponse);
+                
+                if (analysis.isRelevant) {
+                    elizaLogger.log(`Found relevant tweet: ${tweet.text}`);
+                    
+                    // Generate a summary tweet
+                    const summaryPrompt = `
+                        Create a concise summary of this tweet about Sui ecosystem:
+                        Original tweet: ${fullContent}
+                        
+                        Requirements:
+                        - Must be in English
+                        - Focus on key information
+                        - Keep it under 180 characters
+                        - No emojis
+                        - No questions
+                        - Include important details about Sui ecosystem
+                        - If there are images or videos, briefly mention their content
+                    `;
+
+                    const summaryResponse = await generateText({
+                        runtime: this.runtime,
+                        context: summaryPrompt,
+                        modelClass: ModelClass.SMALL,
+                    });
+
+                    // Retweet with comment
+                    const result = await this.client.requestQueue.add(
+                        async () =>
+                            await this.client.twitterClient.sendQuoteTweet(
+                                summaryResponse.trim(),
+                                tweet.id
+                            )
+                    );
+
+                    const body = await result.json();
+                    if (body?.data?.create_tweet?.tweet_results?.result) {
+                        elizaLogger.log("Successfully retweeted with comment");
+                        
+                        // Store the forwarded tweet in runtime cache
+                        const forwardedTweetsKey = `twitter/${this.client.profile.username}/forwardedTweets`;
+                        const currentForwardedTweets = await this.runtime.cacheManager.get<any[]>(forwardedTweetsKey) || [];
+                        
+                        currentForwardedTweets.push({
+                            originalTweet: tweet.text,
+                            summary: summaryResponse.trim(),
+                            mediaContext: imageDescriptionsArray,
+                            analysis: analysis,
+                            timestamp: Date.now()
+                        });
+                        
+                        await this.runtime.cacheManager.set(forwardedTweetsKey, currentForwardedTweets);
+                        
+                        // Create memory of the interaction
+                        const memory: Memory = {
+                            id: stringToUuid(tweet.id + "-" + this.runtime.agentId),
+                            userId: this.runtime.agentId,
+                            agentId: this.runtime.agentId,
+                            roomId: stringToUuid(tweet.conversationId + "-" + this.runtime.agentId),
+                            content: {
+                                text: summaryResponse.trim(),
+                                url: `https://twitter.com/${this.client.twitterConfig.TWITTER_USERNAME}/status/${body.data.create_tweet.tweet_results.result.rest_id}`,
+                                source: "twitter",
+                                action: "quote",
+                                metadata: {
+                                    originalTweet: tweet.text,
+                                    mediaDescriptions: imageDescriptionsArray,
+                                    analysis: analysis
+                                }
+                            },
+                            createdAt: Date.now(),
+                            embedding: getEmbeddingZeroVector()
+                        };
+                        
+                        await this.runtime.messageManager.createMemory(memory);
+                        return;
+                    }
+                } else {
+                    elizaLogger.log(`Skipping irrelevant tweet: ${analysis.reason}`);
+                }
+            } catch (error) {
+                elizaLogger.error("Error parsing analysis response:", error);
+            }
         }
 
-        // get usernames into str
-        const validTargetUsersStr =
-            this.client.twitterConfig.TWITTER_TARGET_USERS.join(",");
+        // For non-mentions or if mention analysis failed, proceed with normal comment flow
+        const validTargetUsersStr = this.client.twitterConfig.TWITTER_TARGET_USERS.join(",");
 
         const shouldRespondContext = composeContext({
             state,
             template:
-                this.runtime.character.templates
-                    ?.twitterShouldRespondTemplate ||
+                this.runtime.character.templates?.twitterShouldRespondTemplate ||
                 this.runtime.character?.templates?.shouldRespondTemplate ||
                 twitterShouldRespondTemplate(validTargetUsersStr),
         });
@@ -428,7 +508,6 @@ export class TwitterInteractionClient {
             modelClass: ModelClass.MEDIUM,
         });
 
-        // Promise<"RESPOND" | "IGNORE" | "STOP" | null> {
         if (shouldRespond !== "RESPOND") {
             elizaLogger.log("Not responding to message");
             return { text: "Response Decision:", action: shouldRespond };
@@ -455,8 +534,7 @@ export class TwitterInteractionClient {
                     : '',
             },
             template:
-                this.runtime.character.templates
-                    ?.twitterMessageHandlerTemplate ||
+                this.runtime.character.templates?.twitterMessageHandlerTemplate ||
                 this.runtime.character?.templates?.messageHandlerTemplate ||
                 twitterMessageHandlerTemplate,
         });
@@ -535,8 +613,8 @@ export class TwitterInteractionClient {
                     }
 
                     const responseTweetId =
-                    responseMessages[responseMessages.length - 1]?.content
-                        ?.tweetId;
+                        responseMessages[responseMessages.length - 1]?.content
+                            ?.tweetId;
 
                     await this.runtime.processActions(
                         message,

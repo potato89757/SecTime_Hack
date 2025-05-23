@@ -37,6 +37,29 @@ export async function scrapeProjectUpdates(): Promise<string[]> {
   } finally {
     await browser.close();
   }
+
+  result.length = 0;
+  
+  // 以下是结果
+  result.push("SGOLD_FUN", "jackson_app", "xocietyofficial", "ikadotxyz", "AmbrusStudio", "WalrusProtocol",
+    "astros_ag", "DungeonMove", "hokko_io", "Project_Jcard", "nami_hq", "Magma_Finance",
+    "SuiRWA", "MetaStables", "SeedCombinator", "WaveOnSui", "wansuifun", "springsui_",
+    "arttoo_official", "6degrees_ai", "HopAggregator", "AlphaFiSUI", "7k_ag_", "doubleup_app",
+    "suidepinai", "OG_Battlefront_", "OceansGallerie", "YouSUI_Global", "strater_sui", "suilette",
+    "FanTV_official", "sudofinance", "isspio", "HaedalProtocol", "SuiGame_io", "blubsui",
+    "get_nimbus", "mofalabs", "ChronosWorlds", "volo_sui", "Releap_IO", "cubicgamesxyz",
+    "KriyaDEX", "flame_protocol", "Maxi_sui", "Turbos_finance", "TypusFinance", "BeLaunch_",
+    "IPXLabs", "TrantorianVerse", "Cosmocadia", "GreenPower_N", "suia2023", "Origin_Byte",
+    "ComingChatApp", "suiet_wallet", "Gallerysui", "KeepSakeMarket", "joinMovEX", "suiswap_app",
+    "PortoLabs_", "SUI_agents", "PlayDarktimes", "RECRDapp", "splash_xyz", "hippo_cto",
+    "LumiWave_Lab", "DeepBookonSui", "lofitheyeti", "DeLoreanlabs", "PawtatoFinance", "SoundnessLabs",
+    "SuiPlay", "steammfi", "nemoprotocol", "SlushWallet", "bucket_protocol", "0xObeliskLabs",
+    "AftermathFi", "FlowX_finance", "SuiPadxyz", "Scallop_io", "navi_protocol", "GiveRep",
+    "suilendprotocol", "SuiNSdapp", "Suitzerland", "DubheEngine", "hiphopdotfun", "SuiDollar",
+    "SuiNetwork", "Sui_ster", "staketab"
+  )
+
   console.log(result);
+
   return result;
 }

@@ -1,38 +1,52 @@
-【用途说明】
-本知识模块用于帮助 AI Agent 判断一篇空投教程是否值得转发。Agent 应该优先转发来自可信账号的空投教程，尤其是内容结构完整、附有操作指南和官方链接的教程。
+📘 Purpose
 
-【可信空投教程的一般结构】
-以下要素在高质量教程中通常会同时出现，Agent 可据此判断是否推荐：
+This knowledge module is designed to help the AI Agent evaluate whether an airdrop tutorial is worth reposting.
+The Agent should prioritize tutorials from trusted accounts, especially those with complete structure, step-by-step instructions, and official links.
 
-📌 项目背景说明：
-- 项目属于哪条链（如 Solana Layer2、以太坊生态）
-- 是否有已披露的融资信息（如 A 轮、战略轮）
-- 是否具备技术特色（如模块化、游戏引擎支持）
+⸻
 
-📌 教程任务说明（分步骤说明）：
-- 钱包安装或连接步骤（通常附插件地址）
-- Faucet 领水（需测试币）地址
-- 社交媒体任务（关注 X、加入 Discord）
-- 链上交互任务（打卡签到、测试交易、绑定身份等）
-- 邀请机制（推荐链接、链接绑定奖励）
-- 奖励机制（积分、神秘盒子、NFT 等）
+✅ Common Structure of High-Quality Airdrop Tutorials
 
-📌 交互门槛信息：
-- 是否需要质押、链上交易、特定钱包操作
-- 是否“0撸友好”（即无需花费实际资金）
+A trustworthy airdrop tutorial typically includes all or most of the following components:
 
-📌 原文链接与出处：
-- 应包含原始教程推文链接或媒体来源（如 TechFlow、Odaily、Biteye）
+📌 Project Background
+	•	What blockchain the project is based on (e.g., Solana Layer2, Ethereum ecosystem)
+	•	Whether it has disclosed funding (e.g., Seed, Series A, Strategic rounds)
+	•	Any technical uniqueness (e.g., modular architecture, game engine integration)
 
-【判断可信来源】
-Agent 应优先参考以下账号发布的教程：
-- 媒体账号：@BlockBeatsAsia, @OdailyChina, @BiteyeCN, @wublockchain12, @TechFlowPost
-- 教程作者：@followin_io_zh, @SoSoValue_CN, @iamyourchaos, @ai_8684xtpa
+📌 Step-by-Step Task Breakdown
+	•	Wallet installation or connection (with plugin links if needed)
+	•	Faucet to receive test tokens
+	•	Social tasks (follow X, join Discord)
+	•	On-chain interaction tasks (daily check-in, test swaps, identity binding)
+	•	Referral program (referral link, invite rewards)
+	•	Reward mechanisms (points, mystery boxes, NFTs, etc.)
 
-【行为建议】
-若 Agent 检测到一条推文满足以下条件，即可使用简洁、教学风格转发或总结：
-- 含原始链接（推文或外部媒体）
-- 教程结构中包含 ≥4 项要素（如钱包说明 + 任务介绍 + 官方地址 + 奖励机制）
-- 来自可信账号 或 被多个可信账号转推
+📌 Interaction Threshold Info
+	•	Does it require staking, on-chain transactions, or a specific wallet?
+	•	Is it zero-cost friendly (no real funds needed to participate)?
 
-若教程中含有误导性语句、无交互说明、无来源链接，或账号为匿名无历史记录者，则拒绝转发并忽略。
+📌 Original Source Link
+	•	Should include the original tutorial tweet or media link (e.g., TechFlow, Odaily, Biteye)
+
+⸻
+
+👀 Trusted Sources
+
+The Agent should give priority to tutorials from the following accounts:
+	•	Media Accounts:
+@BlockBeatsAsia, @OdailyChina, @BiteyeCN, @wublockchain12, @TechFlowPost
+	•	Tutorial Authors:
+@followin_io_zh, @SoSoValue_CN, @iamyourchaos, @ai_8684xtpa
+
+⸻
+
+🤖 Behavior Guidelines
+
+If a tweet meets all the following, the Agent may repost or summarize it using an educational, concise tone:
+	•	Contains original tutorial link (tweet or external media)
+	•	Contains ≥ 4 key elements (e.g., wallet steps + task list + official links + reward info)
+	•	Comes from a trusted source or is retweeted by multiple trusted accounts
+
+If the tutorial includes misleading claims, lacks interaction details, omits original sources, or is from an anonymous account with no history,
+→ Ignore and do not repost.

@@ -11,10 +11,10 @@
             "model": "en_US-male-medium"
         },
         "secrets": {
-            "TWITTER_USERNAME": "Drop_Verse_",
-            "TWITTER_PASSWORD": "diyicibisai",
-            "TWITTER_EMAIL": "dropverse2025@gmail.com",
-            "TWITTER_2FA_SECRET": "HSPCYBOUJVDB7ORH"
+            "TWITTER_USERNAME": "SectimeHack2025",
+            "TWITTER_PASSWORD": "Sectime2025",
+            "TWITTER_EMAIL": "sectimehack@outlook.com",
+            "TWITTER_2FA_SECRET": "VTB2ETUT2QGSB2NC"
         }
     },
     "knowledge": [

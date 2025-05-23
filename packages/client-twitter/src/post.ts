@@ -52,9 +52,9 @@ const twitterPostTemplate = `
 {{postDirections}}
 
 # Task: Generate a post in the voice and style and perspective of {{agentName}} @{{twitterUserName}}.
-所有输出必须为中文，且仅包含简体中文字符。
+All outputs must be in English.
 
-如果生成的内容具有广告性质（例如包含促销、产品推荐、购买链接、品牌口号等），则返回空字符串 ""。空字符串也是一个有效返回。
+If the generated content is advertising in nature (e.g., includes promotions, product recommendations, purchase links, brand slogans, etc.), return an empty string “”. An empty string is also a valid output.
 
 Write a post that is {{adjective}} about {{topic}} (without mentioning {{topic}} directly), from the perspective of {{agentName}}. Do not add commentary or acknowledge this request, just write the post.
 Your response should be 1, 2, or 3 sentences (choose the length at random).
@@ -1003,14 +1003,10 @@ export class TwitterPostClient {
     /**
      * Generates a new tweet, sends it for verification if required, or posts it directly
      */
-    // modify summary the latest three memories
     async generateNewTweet() {
-        elizaLogger.log("Generating new tweet based on recent memories");
+        elizaLogger.log("Generating new tweet based on cached forwarded tweets");
 
         try {
-            const roomId = stringToUuid(
-                "twitter_generate_room-" + this.runtime.agentId
-            );
             await this.runtime.ensureUserExists(
                 this.runtime.agentId,
                 this.client.profile.username,
@@ -1018,58 +1014,44 @@ export class TwitterPostClient {
                 "twitter"
             );
     
-            const allMemories = await this.runtime.messageManager.getMemories({
-                roomId: roomId,
-                unique: true,
-            });
+            // Get forwarded tweets from cache
+            const forwardedTweetsKey = `twitter/${this.client.profile.username}/forwardedTweets`;
+            const forwardedTweets = await this.runtime.cacheManager.get<any[]>(forwardedTweetsKey) || [];
             
-            elizaLogger.log(`All memories: ${JSON.stringify(allMemories)}`);
-            const filteredQuotes = allMemories
-                .filter((m) => m.content.action?.includes("quote"))
-                .sort((a, b) => b.createdAt - a.createdAt)
-                .slice(0, 3); 
-    
-            if (filteredQuotes.length < 3) {
+            // Sort by timestamp and get the latest 3
+            const latestForwardedTweets = forwardedTweets
+                .sort((a, b) => b.timestamp - a.timestamp)
+                .slice(0, 3);
+            
+            elizaLogger.log("Cache Manager Memory:",latestForwardedTweets)
+            
+            if (latestForwardedTweets.length < 3) {
                 elizaLogger.log(
-                    "Not enough quote tweets since last post, falling back to default tweet"
+                    "Not enough forwarded tweets for summary (need 3)"
                 );
                 return;
             }
 
-            const combinedText = filteredQuotes.map((memory) => memory.content.text).join("\n\n");
+            const combinedText = latestForwardedTweets.map((tweet) => {
+                return `Original Tweet: ${tweet.originalTweet}\nSummary: ${tweet.summary}`;
+            }).join("\n\n");
+
             elizaLogger.log(`Combined text: ${combinedText}`);
-            const state = await this.runtime.composeState(
-                {
-                    userId: this.runtime.agentId,
-                    roomId: roomId,
-                    agentId: this.runtime.agentId,
-                    content: {
-                        text: combinedText || "",
-                        action: "TWEET",
-                    },
-                },
-                {
-                    twitterUserName: this.client.profile.username,
-                    maxTweetLength: this.client.twitterConfig.MAX_TWEET_LENGTH,
-                }
-            );
 
             const twitterSummaryTemplate = `
-                你是一个加密行业资讯总结助手，请根据当前提供的推文内容（包含多条推文），输出简洁、专业、条理清晰的中文摘要，总结要点如下要求：
-                •	总结格式为三段，每段前加 emoji 开头，简要说明该推文主题
-                •	每段文字不超过60字,重点突出事件背景和作者评论立场
-                •	语言风格中立、专业，适当引导用户关注项目潜力或风险
-                •	不要逐字复述推文内容，要提炼重点，表达作者传达的核心意思
-                请基于${combinedText}生成总结
+                You are a crypto industry news summarization assistant. Based on the currently provided tweets (including multiple tweets), output a concise, professional, and well-structured Chinese summary with the following requirements：
+                - Summary format: three paragraphs, each starting with an emoji that briefly indicates the tweet's topic
+                - Each paragraph ≤ 60 characters, emphasizing event background and the author's stance
+                - Tone neutral and professional, appropriately guiding users to note project potential or risks
+                - Do not quote tweets verbatim; extract key points and convey the core message
+                - Ensure total character count ≤ 180 (this is the most important)
+                Please generate the summary based on the following content:
+                ${combinedText}
             `; 
-            const context = composeContext({
-                state,
-                template: twitterSummaryTemplate
-            });
 
             const response = await generateText({
                 runtime: this.runtime,
-                context,
+                context: twitterSummaryTemplate,
                 modelClass: ModelClass.SMALL,
             });
 
@@ -1145,12 +1127,14 @@ export class TwitterPostClient {
                     
                     const taskId = await this.sendForVerification(
                         tweetTextForPosting,
-                        roomId,
+                        stringToUuid("twitter_verification_room"),
                         rawTweetContent
                     );
                     
                     if (taskId === "direct-posted") {
                         elizaLogger.log("Tweet was posted directly due to verification fallback");
+                        // Clear the forwarded tweets from cache after successful posting
+                        await this.runtime.cacheManager.delete(forwardedTweetsKey);
                     } else if (taskId) {
                         elizaLogger.log(`Tweet sent for verification with task ID: ${taskId}`);
                     } else {
@@ -1164,11 +1148,13 @@ export class TwitterPostClient {
                         this.runtime,
                         this.client,
                         tweetTextForPosting,
-                        roomId,
+                        stringToUuid("twitter_verification_room"),
                         rawTweetContent,
                         this.twitterUsername,
                         mediaData
                     );
+                    // Clear the forwarded tweets from cache after successful posting
+                    await this.runtime.cacheManager.delete(forwardedTweetsKey);
                 }
             } catch (error) {
                 elizaLogger.error("Error sending tweet:", error);

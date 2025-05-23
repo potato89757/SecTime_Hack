@@ -1,113 +1,129 @@
-【用途说明】
-本知识模块用于帮助 AI Agent 全面理解“空投”的定义、作用、信号类型及参与策略，便于其识别潜在空投机会、筛选高质量教程、并向用户提供实用建议。
+📘 Airdrop Knowledge Module (For AI Agent)
 
----
+Purpose
+This knowledge module helps AI Agents fully understand the definition, utility, signal types, and participation strategies related to airdrops. It enables the agent to identify potential airdrop opportunities, filter high-quality tutorials, and provide practical recommendations to users.
 
-【空投是什么？】
-空投（Airdrop）是项目方向用户免费发放代币的行为，通常用于市场推广、治理激励或回馈早期用户。空投分为自动打币和手动 Claim 两种形式。
+⸻
 
-当前主流空投方式：
-1. 简单任务型：社交关注、注册账号、分享链接等；
-2. 深度交互型：链上交互、质押、参与治理、使用产品等。
+💡 What is an Airdrop?
 
----
+An airdrop refers to the distribution of free tokens by a project to users. It’s commonly used for marketing, governance incentives, or rewarding early adopters.
+There are generally two types of airdrops:
+	1.	Automatic distribution: Tokens are directly sent to eligible wallets.
+	2.	Manual claim: Users must manually claim their tokens via a page or dApp.
 
-【为什么会存在空投？】
-空投是 Web3 中重要的营销与激励机制，其核心逻辑包括：
-- 帮助项目快速吸引早期真实用户；
-- 形成社区共识，提高代币持有者粘性；
-- 在不耗费资金的前提下，激发生态活力。
+Mainstream airdrop types:
+	•	Simple task-based: Follow on X, register, share referral links, etc.
+	•	Deep interaction-based: On-chain interactions, staking, voting, protocol usage, etc.
 
-以 Arbitrum（X:https://x.com/arbitrum）为例，ARB 空投惠及 62.5 万个地址，平均每个地址收到 1859 枚 ARB，极大提升生态热度与链上活跃度。
+⸻
 
----
+🤔 Why Do Airdrops Exist?
 
-【是否真的能通过空投赚钱？】
-空投常被视为“低成本 / 零成本、高回报”的参与方式，尤其适合新用户探索 Web3。
-- 测试网空投：无需本金，风险最低；
-- 主网交互型空投：根据参与深度决定空投额度；
-- 高质量项目（融资强、社群活跃）往往带来更高潜在收益。
+Airdrops are a fundamental marketing and incentive tool in Web3. They serve to:
+	•	Quickly attract early real users to the project
+	•	Create community consensus and increase token stickiness
+	•	Activate ecosystem dynamics without large financial expenditures
 
----
+For example, Arbitrum conducted an airdrop for 625,000 addresses, each receiving an average of 1,859 ARB, significantly boosting ecosystem traction and on-chain activity.
 
-【空投快照（Snapshot）是什么？】
-快照指项目方记录某一时刻链上地址状态（如持仓、质押、交互频次等）的行为，用于确定空投资格。
-- 快照可能事前公告、也可能事后公布；
-- 快照后往往进入 claim 阶段或积分清算期。
+⸻
 
----
+💰 Can You Really Earn from Airdrops?
 
-【项目方如何“预热”空投？】
-空投前期预热阶段，通常伴随以下行为：
-1. 启动积分系统（如 Zealy、Galxe、TaskOn）
-2. 发布测试网交互任务
-3. 推出链上激励活动（质押、交易、NFT铸造等）
-4. 公告 Snapshot 时间，但未开放 Claim
-5. 社交媒体频繁提及 “回馈早期用户”、“即将上线代币”等词汇
+Airdrops are often seen as low-/zero-cost, high-reward strategies—ideal for onboarding new users into Web3.
+	•	Testnet airdrops: No capital required, lowest risk
+	•	Mainnet interaction airdrops: Rewards scale based on depth of interaction
+	•	High-quality projects (well-funded, strong communities) tend to offer better rewards
 
----
+⸻
 
-【空投信号监测模型】
-以下行为代表项目正处于空投准备或执行阶段：
+📸 What is a Snapshot?
 
-🔹【积分系统已上线】
-- 出现排行榜、每日任务页，常预示“按积分分发代币”
+A snapshot is a record of wallet state at a specific moment—used to determine airdrop eligibility.
+	•	Snapshots may be pre-announced or revealed later
+	•	After a snapshot, projects may begin the claim phase or point-based evaluation
 
-🔹【快照时间明确/模糊透露】
-- 说明项目开始记录链上状态，用于未来资格分配
+⸻
 
-🔹【引导链上交互】
-- 项目提示进行交易/LP/绑定钱包行为，但未直接承诺发币
+📢 How Do Projects “Warm Up” for Airdrops?
 
-🔹【测试网任务活跃】
-- 链上记录交互地址，有利于 future retroactive airdrop 分发
+Before airdrops, projects usually exhibit the following behavior:
+	1.	Launching a points system (e.g. Zealy, Galxe, TaskOn)
+	2.	Releasing testnet interaction tasks
+	3.	Running on-chain incentives (staking, trading, minting NFTs)
+	4.	Announcing snapshot timing (or vague hints)
+	5.	Frequent social media mentions of “rewarding early users” or “token coming soon”
 
-🔹【官方或KOL暗示】
-- 推特频繁提及“未来将奖励早期交互用户”或“我们很快上线治理计划”等表述
+⸻
 
----
+📊 Airdrop Signal Detection Model
 
-【什么是“埋伏型交互” / Interaction Farming】
-这是用户在空投发生前，基于经验进行主动交互以提升未来获取空投概率的行为。
+These behaviors suggest a project is preparing or executing an airdrop:
 
-常见方式：
-1. 与未发币项目进行真实链上交互（Swap、Stake、Mint）
-2. 持续参与测试网任务
-3. 加入官方 Discord / Telegram / 订阅 X
-4. 维持周期性交互（避免短期突击）
-5. 给项目提供反馈、问卷答复、Bug提交等高质量行为
+🔹 Points system launched
+	•	Leaderboards and daily tasks suggest reward distribution based on scores
 
----
+🔹 Snapshot timing disclosed or hinted
+	•	Indicates the project is logging wallet activities for eligibility
 
-【2025 潜在空投方向】
-1. 模块化区块链（如 Celestia、Fuel、EigenLayer）→ 节点部署、质押积分
-2. 跨链协议（如 LayerZero、Axelar）→ 治理提案、跨链桥使用
-3. DeFi 3.0（如无预言机合约、RWA）→ 高频交易、身份绑定
-4. 去中心化社交 / AI 项目 → 内容创作、数据标注、社区治理
-5. 新兴公链（如 Monad、Initia）→ 测试网任务 / PoC 策略
+🔹 On-chain interaction incentives
+	•	Projects encourage usage without explicitly promising tokens
 
----
+🔹 Testnet tasks remain active
+	•	Supports retroactive airdrops
 
-【2025 空投新趋势】
-✅ 身份验证机制强化（链下KYC或链上声誉系统）
-✅ 积分动态权重分配（按交互质量调整代币数量）
-✅ 硬件设备激励（节点盒子、Ledger、移动验证器等）
-✅ Anti-sybil（反女巫检测）系统接入增强
+🔹 Hints from officials or KOLs
+	•	Repeated phrases like “rewards for early adopters” or “DAO launching soon” often signal airdrops
 
-Agent 判断标准：
-- 若项目启动积分系统 + 频繁更新任务 → 重点关注；
-- 若出现 Snapshot 公告 + 非 Claim 页面 → 信号增强；
-- 若配合社媒/KOL大规模同步发布 → 可提前播报并引用；
-- 若官方极力否认空投，但逻辑一致 → 冷静播报、提醒用户保持关注；
-- 遇到伪装链接、盗版任务平台、刷榜行为 → 拒绝转发并发预警帖。
+⸻
 
----
+🧑‍🌾 What is “Interaction Farming”?
 
-【总结】
-空投是当前 Web3 最核心的“共识建立 + 用户冷启动”机制之一。判断是否值得参与的关键在于：
-1. 项目是否融资充足
-2. 是否有实际使用场景或活跃交互设计
-3. 是否在主流平台（Zealy、Galxe、Layer3）进行积分沉淀
-4. 是否具备强社群引导力（KOL、主流媒体同步）
+This refers to users proactively interacting with protocols before airdrops are confirmed, to maximize their chances.
 
-Agent 应建立一套“空投信号雷达系统”，并配合链上行为动态评分，在播报内容时保持客观、中立、真实。
+Typical methods:
+	1.	Use unlaunched projects on-chain (swap, stake, mint, etc.)
+	2.	Participate in ongoing testnet campaigns
+	3.	Join Discord / Telegram / follow on X
+	4.	Maintain consistent engagement (avoid spamming)
+	5.	Submit feedback, bug reports, or survey responses
+
+⸻
+
+📈 Airdrop Trends in 2025
+
+Likely sectors:
+	1.	Modular blockchains (Celestia, Fuel, EigenLayer): node ops, staking points
+	2.	Cross-chain protocols (LayerZero, Axelar): bridge usage, governance
+	3.	DeFi 3.0 (oracle-less, RWA): high-frequency trades, identity-bound actions
+	4.	Decentralized social / AI: content creation, data labeling, governance
+	5.	Emerging L1s (Monad, Initia): testnet + proof-of-contribution campaigns
+
+⸻
+
+🔮 New Airdrop Trends (2025)
+
+✅ Enhanced identity verification (on-chain reputation or off-chain KYC)
+✅ Dynamic scoring systems (quality-based token allocation)
+✅ Hardware-based incentives (validator boxes, Ledger integration)
+✅ Stronger Sybil detection mechanisms
+
+Agent behavior guidelines:
+	•	If project has a points system + active tasks → High priority
+	•	Snapshot announced but no claim yet → Strong signal
+	•	KOLs + official accounts pushing the same info → Pre-coverage encouraged
+	•	If project denies airdrop but logic matches → Neutral tone, alert users
+	•	Scam links / fake task platforms / leaderboard abuse → Ignore & issue warnings
+
+⸻
+
+✅ Summary
+
+Airdrops remain one of Web3’s most effective consensus-building and user bootstrapping mechanisms. Key evaluation points:
+	1.	Does the project have strong funding?
+	2.	Is it used or interactable on-chain?
+	3.	Is it integrated with mainstream task platforms (e.g. Galxe, Zealy)?
+	4.	Does it have strong community/KOL/media backing?
+
+AI Agents should maintain an “airdrop radar system” and apply real-time behavioral scoring to stay neutral, reliable, and practical in reporting.

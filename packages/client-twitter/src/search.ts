@@ -15,7 +15,8 @@ import { stringToUuid } from "@elizaos/core";
 import type { ClientBase } from "./base";
 import { buildConversationThread, sendTweet, wait } from "./utils.ts";
 import { scrapeProjectUpdates } from "./rootdata/scrap_net.ts";
-import { scrapeFundraisingProjects } from "./rootdata/scrap_project.ts";
+//import { } from "./rootdata/scrap_project_detail.ts"
+
 
 const twitterSearchTemplate =
     `{{timeline}}
@@ -38,8 +39,16 @@ About {{agentName}} (@{{twitterUserName}}):
 {{currentPost}}
 
 # make a summary of the post
-确保内容是Web3，空投，空投教程，IDO，ICO。如果是其他内容，请忽略。
-最后返回的摘要，请用中文输出。
+Create a concise tweet (max 180 characters) to share this important update:
+Original tweet: {{currentPost}}
+                        
+Requirements:
+- Must be in English
+- Focus on key information
+- Keep it under 180 characters
+- No emojis
+- No questions
+- Include important details about Web3, airdrops, IDO, or ICO if present
 
 Your response should not contain any questions. Brief, concise statements only. No emojis. Use \\n\\n (double spaces) between statements.
 
@@ -67,18 +76,21 @@ export class TwitterSearchClient {
 
     // new implementation
     private async refreshSearchTopics() {
-    try {
-        const topics1 = await scrapeProjectUpdates();
-        const topics2 = await scrapeFundraisingProjects();
-        this.runtime.character.topics = Array.from(new Set([
-        ...this.runtime.character.topics,
-        ...topics1,
-        ...topics2
-        ]));
-        elizaLogger.log("Search topics initialized");
-    } catch (error) {
-        elizaLogger.error("Error initializing topics:", error);
-    }
+        try {
+            const topics1 = await scrapeProjectUpdates();
+            //const topics2 = await scrapeFundraisingProjects();
+            this.runtime.character.topics = Array.from(new Set([
+            ...this.runtime.character.topics,
+            ...topics1,
+            //...topics2
+            ]));
+            elizaLogger.log("Search topics initialized");
+            
+            // Add project tweets forwarding
+            //await this.forwardProjectTweets(topics1);
+        } catch (error) {
+            elizaLogger.error("Error initializing topics:", error);
+        }
     }
 
     private refreshSearchTopicsLoop() {
@@ -102,294 +114,305 @@ export class TwitterSearchClient {
     private async engageWithSearchTerms() {
         elizaLogger.log("Engaging with search terms");
         try {
-            const searchTerm = [...this.runtime.character.topics][
+            let searchUsername = [...this.runtime.character.topics][
                 this.searchIndex
             ];
 
+            if (!searchUsername) {
+                elizaLogger.warn("No valid username found in topics");
+                this.searchIndex = (this.searchIndex + 1) % this.runtime.character.topics.length;
+                return;
+            }
+
             // TODO: we wait 5 seconds here to avoid getting rate limited on startup, but we should queue
             await new Promise((resolve) => setTimeout(resolve, 5000));
-            const recentTweets = await this.client.fetchSearchTweets(
-                searchTerm,
-                30,
-                SearchMode.Top
-            );
-            elizaLogger.log("Search tweets fetched");
 
-            // return all tweets (modify)
-            const slicedTweets = recentTweets.tweets
-            elizaLogger.log("Sliced tweets:", slicedTweets);
-            elizaLogger.log("Fetching search tweets:", searchTerm);
-
-            if (slicedTweets.length === 0) {
+            let tweets = await this.client.fetchUserTweets(searchUsername, 3);
+            let l = 0
+            while (tweets.tweets.length == 0 && l < this.runtime.character.topics.length){
                 elizaLogger.log(
-                    "No valid tweets found for the search term",
-                    searchTerm
+                    `No recent tweets (within 2 days) found for user @${searchUsername}`
                 );
+                this.searchIndex = (this.searchIndex + 1) % this.runtime.character.topics.length;
+                searchUsername = [...this.runtime.character.topics][this.searchIndex]
+                tweets = await this.client.fetchUserTweets(searchUsername, 3);
+                l += 1;
+            }
+            
+            if (tweets.tweets.length === 0) {
+                elizaLogger.log(
+                    `No recent tweets (within 2 days) found for user @${searchUsername}`
+                );
+                this.searchIndex = (this.searchIndex + 1) % this.runtime.character.topics.length;
                 return;
             }
+            elizaLogger.log(`Found ${tweets.tweets.length} recent tweets from @${searchUsername}`);
 
-/*            const prompt = `
-  Here are some tweets related to the search term "${searchTerm}":
+            for (const tweet of tweets.tweets) {
+                // Skip if we've already responded to this tweet
+                if (this.respondedTweets.has(tweet.id)) {
+                    continue;
+                }
+                if (tweet.username === this.twitterUsername) {
+                    elizaLogger.log("Skipping tweet from bot itself");
+                    break;
+                }
+                
+                // filter out tweets that are not relevant to Web3, airdrops, IDO, ICO, or important project updates
+                const relevancePrompt = `
+                    Analyze this tweet and determine if it's relevant to Web3, airdrops, IDO, ICO, or important project updates.
+                    Tweet content: ${tweet.text}
+                    
+                    Return only "RELEVANT" or "NOT_RELEVANT".
+                `;
 
-  ${[...slicedTweets, ...homeTimeline]
-      .filter((tweet) => {
-          // ignore tweets where any of the thread tweets contain a tweet by the bot
-          const thread = tweet.thread;
-          const botTweet = thread.find(
-              (t) => t.username === this.twitterUsername
-          );
-          return !botTweet;
-      })
-      .map(
-          (tweet) => `
-    ID: ${tweet.id}${tweet.inReplyToStatusId ? ` In reply to: ${tweet.inReplyToStatusId}` : ""}
-    From: ${tweet.name} (@${tweet.username})
-    Text: ${tweet.text}
-  `
-      )
-      .join("\n")}
-      
-  Which tweet is the most interesting and relevant for Ruby to reply to? Please provide only the ID of the tweet in your response.
-  Notes:
-    - Respond to Chinese tweets only
-    - Respond to tweets that don't have a lot of hashtags, links, URLs or images
-    - Respond to tweets that are not retweets
-    - Respond to tweets where there is an easy exchange of ideas to have with the user
-    - ONLY respond with the ID of the tweet`;
-*/
-            const prompt = `
-                Here are some tweets:
-                ${slicedTweets
-                    .filter((tweet) => {
-                        // ignore tweets where any of the thread tweets contain a tweet by the bot
-                        const thread = tweet.thread;
-                        const botTweet = thread.find(
-                            (t) => t.username === this.twitterUsername
+                const relevanceResponse = await generateText({
+                    runtime: this.runtime,
+                    context: relevancePrompt,
+                    modelClass: ModelClass.SMALL,
+                });
+
+                elizaLogger.log("gpt result: ",relevanceResponse.trim())
+
+                // Pass
+                if (relevanceResponse.trim() === "RELEVANT") {
+                    const conversationId = tweet.conversationId;
+                    const roomId = stringToUuid(
+                        conversationId + "-" + this.runtime.agentId
+                    );
+        
+                    const userIdUUID = stringToUuid(tweet.userId as string);
+        
+                    await this.runtime.ensureConnection(
+                        userIdUUID,
+                        roomId,
+                        tweet.username,
+                        tweet.name,
+                        "twitter"
+                    );
+        
+                    // crawl additional conversation tweets, if there are any
+                    await buildConversationThread(tweet, this.client);
+        
+                    const message = {
+                        id: stringToUuid(tweet.id + "-" + this.runtime.agentId),
+                        agentId: this.runtime.agentId,
+                        content: {
+                            text: tweet.text,
+                            url: tweet.permanentUrl,
+                            inReplyTo: tweet.quotedStatusId
+                                ? stringToUuid(
+                                    tweet.quotedStatusId +
+                                        "-" +
+                                        this.runtime.agentId
+                                )
+                                : undefined,
+                        },
+                        userId: userIdUUID,
+                        roomId,
+                        // Timestamps are in seconds, but we need them in milliseconds
+                        createdAt: tweet.timestamp * 1000,
+                    };
+        
+                    if (!message.content.text) {
+                        elizaLogger.warn("Returning: No response text found");
+                        return;
+                    }
+        
+                    // Fetch replies and retweets
+                    const replies = tweet.thread;
+                    const replyContext = replies
+                        .filter((reply) => reply.username !== this.twitterUsername)
+                        .map((reply) => `@${reply.username}: ${reply.text}`)
+                        .join("\n");
+        
+                    let tweetBackground = "";
+                    if (tweet.isRetweet) {
+                        const originalTweet = await this.client.requestQueue.add(() =>
+                            this.client.twitterClient.getTweet(tweet.id)
                         );
-                        return !botTweet;
-                    }).map(
-                        (tweet) => `
-                  ID: ${tweet.id}${tweet.quotedStatusId ? ` In reply to: ${tweet.quotedStatusId}` : ""}
-                  From: ${tweet.name} (@${tweet.username})
-                  Text: ${tweet.text}
-                `
-                    ).join("\n")}
+                        tweetBackground = `Retweeting @${originalTweet.username}: ${originalTweet.text}`;
+                    }
+        
+                    // Generate image descriptions using GPT-4 vision API
+                    const imageDescriptions = [];
+                    for (const photo of tweet.photos) {
+                        elizaLogger.log("Processing image:", photo.url);
+                        const description = this.runtime
+                            .getService<IImageDescriptionService>(
+                                ServiceType.IMAGE_DESCRIPTION
+                            )
+                        const description1 = await description.describeImage(photo.url);
+                        imageDescriptions.push(description1);
+                    }
+        
+                    let state = await this.runtime.composeState(message, {
+                        twitterClient: this.client.twitterClient,
+                        twitterUserName: this.twitterUsername,
+                        tweetContext: `${tweetBackground}
+        
+                        Original Post:
+                        By @${tweet.username}
+                        ${tweet.text}${replyContext.length > 0 && `\nReplies to original post:\n${replyContext}`}
+                        ${`Original post text: ${tweet.text}`}
+                        ${tweet.urls.length > 0 ? `URLs: ${tweet.urls.join(", ")}\n` : ""}${imageDescriptions.length > 0 ? `\nImages in Post (Described): ${imageDescriptions.join(", ")}\n` : ""}
+                        `,
+                    });
+        
+                    await this.client.saveRequestMessage(message, state as State);
+        
+                    const context = composeContext({
+                        state,
+                        template:
+                            this.runtime.character.templates?.twitterSearchTemplate ||
+                            twitterSearchTemplate,
+                    });
+        
+                    const responseContent = await generateMessageResponse({
+                        runtime: this.runtime,
+                        context,
+                        modelClass: ModelClass.SMALL,  // modify to small model
+                    });
+        
+                    responseContent.inReplyTo = message.id;
+        
+                    const response = responseContent;
+        
+                    if (!response.text) {
+                        elizaLogger.warn("Returning: No response text found");
+                        return;
+                    }
 
-                Which one is the most relevant to these topics: Web3,空投,空投教程,IDO,ICO,${this.runtime.character.topics[this.searchIndex]}?
+                    elizaLogger.log(`Quote Content: ${response.text}`)
+                    try {
+                        const callback: HandlerCallback = async (response: Content) => {
+                            const result = await this.client.requestQueue.add(
+                                async () =>
+                                    await this.client.twitterClient.sendQuoteTweet(
+                                        response.text,
+                                        tweet.id
+                                    )
+                            );
+                            const body = await result.json();
+                            const tweetResult = body?.data?.create_tweet?.tweet_results?.result;
+                            if (!tweetResult){
+                                elizaLogger.error("Failed to create quote tweet:", body);
+                                return [];
+                            }
 
-                Please return the index (1-based), only return the index, no other text.
-            `;
+                            const forwardedTweetsKey = `twitter/${this.client.profile.username}/forwardedTweets`;
+                            const currentForwardedTweets = await this.runtime.cacheManager.get<any[]>(forwardedTweetsKey) || [];
+                            
+                            currentForwardedTweets.push({
+                                originalTweet: state,
+                                summary: response.text,
+                                mediaContext: imageDescriptions,
+                                analysis: relevanceResponse.trim(),
+                                timestamp: Date.now()
+                            });
+                            
+                            await this.runtime.cacheManager.set(forwardedTweetsKey, currentForwardedTweets);
 
-            const mostInterestingTweetResponse = await generateText({
-                runtime: this.runtime,
-                context: prompt,
-                modelClass: ModelClass.SMALL,
-            });
+                            const memory: Memory = {
+                                id: stringToUuid(tweetResult.rest_id + "-" + this.runtime.agentId),
+                                userId: this.runtime.agentId,
+                                agentId: this.runtime.agentId,
+                                roomId: message.roomId,
+                                content: {
+                                    text: response.text,
+                                    url: `https://twitter.com/${this.twitterUsername}/status/${tweetResult.rest_id}`,
+                                    source: "twitter",
+                                    action: "quote",
+                                },
+                                createdAt: Date.now(),
+                                embedding: getEmbeddingZeroVector()
+                            };
+                            return [memory];
+                        };
+        
+                        const responseMessages = await callback(responseContent);
+        
+                        state = await this.runtime.updateRecentMessageState(state);
+        
+                        for (const responseMessage of responseMessages) {
+                            await this.runtime.messageManager.createMemory(
+                                responseMessage,
+                                false
+                            );
+                        }
+        
+                        state = await this.runtime.updateRecentMessageState(state);
+        
+                        await this.runtime.evaluate(message, state);
+        
+                        await this.runtime.processActions(
+                            message,
+                            responseMessages,
+                            state,
+                            callback
+                        );
+        
+                        this.respondedTweets.add(tweet.id);
+                        const responseInfo = `Context:\n\n${context}\n\nSelected Post: ${tweet.id} - ${tweet.username}: ${tweet.text}\nAgent's Output:\n${response.text}`;
+        
+                        await this.runtime.cacheManager.set(
+                            `twitter/tweet_generation_${tweet.id}.txt`,
+                            responseInfo
+                        );
+        
+                        await wait();
+                    } catch (error) {
+                        console.error(`Error sending response post: ${error}`);
+                    }
 
-            elizaLogger.log("Most interesting tweet response:", mostInterestingTweetResponse);
-            /*--------- modify -----------*/
-            const tweetId = parseInt(mostInterestingTweetResponse.trim());
-            const selectedTweet = slicedTweets[tweetId]; 
-            elizaLogger.log("Selected tweet:", selectedTweet);
-            /*----------------------------*/
-
-            if (!selectedTweet) {
-                elizaLogger.warn("No matching tweet found for the selected ID");
-                elizaLogger.log("Selected tweet ID:", tweetId);
-                return;
+                    elizaLogger.log(
+                        `Bot would respond to tweet ${tweet.id} with: ${response.text}`
+                    );
+                }
             }
+                
+            // const prompt = `
+            //     Here are some tweets:
+            //     ${tweets.tweets
+            //         .filter((tweet) => {
+            //             // ignore tweets where any of the thread tweets contain a tweet by the bot
+            //             const thread = tweet.thread;
+            //             const botTweet = thread.find(
+            //                 (t) => t.username === this.twitterUsername
+            //             );
+            //             return !botTweet;
+            //         }).map(
+            //             (tweet) => `
+            //       ID: ${tweet.id}${tweet.quotedStatusId ? ` In reply to: ${tweet.quotedStatusId}` : ""}
+            //       From: ${tweet.name} (@${tweet.username})
+            //       Text: ${tweet.text}
+            //     `
+            //         ).join("\n")}
 
-            elizaLogger.log("Selected tweet to reply to:", selectedTweet?.text);
+            //     Which one is the most relevant to these topics: Web3,空投,空投教程,IDO,ICO,${this.runtime.character.topics[this.searchIndex]}?
 
-            if (selectedTweet.username === this.twitterUsername) {
-                elizaLogger.log("Skipping tweet from bot itself");
-                return;
-            }
+            //     Please return the index (1-based), only return the index, no other text.
+            // `;
 
-            const conversationId = selectedTweet.conversationId;
-            const roomId = stringToUuid(
-                conversationId + "-" + this.runtime.agentId
-            );
+            // const mostInterestingTweetResponse = await generateText({
+            //     runtime: this.runtime,
+            //     context: prompt,
+            //     modelClass: ModelClass.SMALL,
+            // });
 
-            const userIdUUID = stringToUuid(selectedTweet.userId as string);
-
-            await this.runtime.ensureConnection(
-                userIdUUID,
-                roomId,
-                selectedTweet.username,
-                selectedTweet.name,
-                "twitter"
-            );
-
-            // crawl additional conversation tweets, if there are any
-            await buildConversationThread(selectedTweet, this.client);
-
-            const message = {
-                id: stringToUuid(selectedTweet.id + "-" + this.runtime.agentId),
-                agentId: this.runtime.agentId,
-                content: {
-                    text: selectedTweet.text,
-                    url: selectedTweet.permanentUrl,
-                    inReplyTo: selectedTweet.quotedStatusId
-                        ? stringToUuid(
-                              selectedTweet.quotedStatusId +
-                                  "-" +
-                                  this.runtime.agentId
-                          )
-                        : undefined,
-                },
-                userId: userIdUUID,
-                roomId,
-                // Timestamps are in seconds, but we need them in milliseconds
-                createdAt: selectedTweet.timestamp * 1000,
-            };
-
-            if (!message.content.text) {
-                elizaLogger.warn("Returning: No response text found");
-                return;
-            }
-
-            // Fetch replies and retweets
-            const replies = selectedTweet.thread;
-            const replyContext = replies
-                .filter((reply) => reply.username !== this.twitterUsername)
-                .map((reply) => `@${reply.username}: ${reply.text}`)
-                .join("\n");
-
-            let tweetBackground = "";
-            if (selectedTweet.isRetweet) {
-                const originalTweet = await this.client.requestQueue.add(() =>
-                    this.client.twitterClient.getTweet(selectedTweet.id)
-                );
-                tweetBackground = `Retweeting @${originalTweet.username}: ${originalTweet.text}`;
-            }
-
-            // Generate image descriptions using GPT-4 vision API
-            const imageDescriptions = [];
-            for (const photo of selectedTweet.photos) {
-                elizaLogger.log("Processing image:", photo.url);
-                const description = this.runtime
-                    .getService<IImageDescriptionService>(
-                        ServiceType.IMAGE_DESCRIPTION
-                    )
-                const description1 = await description.describeImage(photo.url);
-                imageDescriptions.push(description1);
-            }
-
-            let state = await this.runtime.composeState(message, {
-                twitterClient: this.client.twitterClient,
-                twitterUserName: this.twitterUsername,
-                tweetContext: `${tweetBackground}
-
-  Original Post:
-  By @${selectedTweet.username}
-  ${selectedTweet.text}${replyContext.length > 0 && `\nReplies to original post:\n${replyContext}`}
-  ${`Original post text: ${selectedTweet.text}`}
-  ${selectedTweet.urls.length > 0 ? `URLs: ${selectedTweet.urls.join(", ")}\n` : ""}${imageDescriptions.length > 0 ? `\nImages in Post (Described): ${imageDescriptions.join(", ")}\n` : ""}
-  `,
-            });
-
-            await this.client.saveRequestMessage(message, state as State);
-
-            const context = composeContext({
-                state,
-                template:
-                    this.runtime.character.templates?.twitterSearchTemplate ||
-                    twitterSearchTemplate,
-            });
-
-            const responseContent = await generateMessageResponse({
-                runtime: this.runtime,
-                context,
-                modelClass: ModelClass.SMALL,  // modify to small model
-            });
-
-            responseContent.inReplyTo = message.id;
-
-            const response = responseContent;
-
-            if (!response.text) {
-                elizaLogger.warn("Returning: No response text found");
-                return;
-            }
-
-            elizaLogger.log(
-                `Bot would respond to tweet ${selectedTweet.id} with: ${response.text}`
-            );
+            
+            // /*--------- modify -----------*/
+            // const tweetId = parseInt(mostInterestingTweetResponse.trim());
+            // const selectedTweet = slicedTweets[tweetId]; 
+            // elizaLogger.log("Selected tweet:", selectedTweet);
+            // /*----------------------------*/
 
             // modify
             this.searchIndex = (this.searchIndex + 1) % this.runtime.character.topics.length;
-            elizaLogger.log(`SelectedTweet ID: ${selectedTweet.id}`);
-            // modify
-            // send quote tweet
-            try {
-                const callback: HandlerCallback = async (response: Content) => {
-                    const result = await this.client.requestQueue.add(
-                        async () =>
-                            await this.client.twitterClient.sendQuoteTweet(
-                                response.text,
-                                selectedTweet.id
-                            )
-                    );
-                    const body = await result.json();
-                    const tweetResult = body?.data?.create_tweet?.tweet_results?.result;
-                    if (!tweetResult){
-                        elizaLogger.error("Failed to create quote tweet:", body);
-                        return [];
-                    }
-                    const memory: Memory = {
-                        id: stringToUuid(tweetResult.rest_id + "-" + this.runtime.agentId),
-                        userId: this.runtime.agentId,
-                        agentId: this.runtime.agentId,
-                        roomId: message.roomId,
-                        content: {
-                            text: response.text,
-                            url: `https://twitter.com/${this.twitterUsername}/status/${tweetResult.rest_id}`,
-                            source: "twitter",
-                            action: "quote",
-                        },
-                        createdAt: Date.now(),
-                        embedding: getEmbeddingZeroVector()
-                    };
-                    return [memory];
-                };
-
-                const responseMessages = await callback(responseContent);
-
-                state = await this.runtime.updateRecentMessageState(state);
-
-                for (const responseMessage of responseMessages) {
-                    await this.runtime.messageManager.createMemory(
-                        responseMessage,
-                        false
-                    );
-                }
-
-                state = await this.runtime.updateRecentMessageState(state);
-
-                await this.runtime.evaluate(message, state);
-
-                await this.runtime.processActions(
-                    message,
-                    responseMessages,
-                    state,
-                    callback
-                );
-
-                this.respondedTweets.add(selectedTweet.id);
-                const responseInfo = `Context:\n\n${context}\n\nSelected Post: ${selectedTweet.id} - ${selectedTweet.username}: ${selectedTweet.text}\nAgent's Output:\n${response.text}`;
-
-                await this.runtime.cacheManager.set(
-                    `twitter/tweet_generation_${selectedTweet.id}.txt`,
-                    responseInfo
-                );
-
-                await wait();
-            } catch (error) {
-                console.error(`Error sending response post: ${error}`);
-            }
+            
         } catch (error) {
             console.error("Error engaging with search terms:", error);
         }
     }
+
 }

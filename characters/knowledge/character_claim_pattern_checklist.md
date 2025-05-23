@@ -1,89 +1,92 @@
-【用途说明】
-本知识模块帮助 AI Agent 识别「Claim 页面」即将上线的关键动向，并在第一时间做出判断和播报提示。适用于判断项目是否进入空投发放的最后阶段（TGE）。
+[Purpose]
+This knowledge module helps the AI Agent identify key signals that a Claim page is about to go live and enables prompt alerts and reporting. It is intended to determine whether a project is entering the final airdrop distribution phase (TGE).
 
----
+⸻
 
-【什么是 Claim 页面？】
-Claim 页面是用户在项目发币（TGE）或发放空投（Airdrop）后，连接钱包领取代币的专属页面。
+[What is a Claim Page?]
+A Claim page is a dedicated interface where users connect their wallets to claim tokens following a Token Generation Event (TGE) or airdrop distribution.
 
-大多数项目会在上线 Claim 页面前，进行一系列“预热操作”——这些信号被称为 Claim Pattern（领取动线），是识别是否即将发币的重要线索。
+Most projects go through a series of “pre-launch actions” before releasing the Claim page. These are known as the Claim Pattern—key indicators that token distribution is imminent.
 
----
+⸻
 
-【上线前常见动线】
-1️⃣ 官方预告
-- 社媒/博客出现 “Claim soon”、“Snapshot done”、“Eligibility ready”等关键词
-- 时间：TGE 前 3~7 天
+[Common Pre-Launch Signals]
 
-2️⃣ 合约部署
-- 在区块浏览器（如 Etherscan）出现代币合约、ClaimRouter、MerkleDistributor 等合约
-- 多为开源合约，能查代币符号、总量、地址等关键字段
+1️⃣ Official Teasers
+	•	Keywords like “Claim soon,” “Snapshot done,” or “Eligibility ready” appear on socials/blogs.
+	•	Typical timing: 3–7 days before TGE.
 
-3️⃣ Snapshot 完成公告
-- 明确表示已记录链上状态
-- Snapshot 后一般 3~10 天内上线 Claim 页面
+2️⃣ Smart Contract Deployment
+	•	Token, ClaimRouter, MerkleDistributor contracts appear on block explorers (e.g., Etherscan).
+	•	Usually open-source, showing details like token symbol, supply, and addresses.
 
-4️⃣ 白名单 / 查询工具
-- 发布资格查询页面，可输入地址查看领取资格
-- 是 “Claim 临近” 的重要标志
+3️⃣ Snapshot Confirmation
+	•	Official statement confirming on-chain snapshot completion.
+	•	Claim page usually follows 3–10 days after snapshot.
 
-5️⃣ 媒体/KOL 教程发出
-- 出现大量教程类推文（截图 + 图解 +合约信息）
-- 通常出自：@BiteyeCN、@followin_io_zh、@wublockchain12 等可信账号
+4️⃣ Whitelist / Eligibility Checker
+	•	Project releases a lookup tool to verify claim eligibility.
+	•	Strong sign that Claim page is imminent.
 
-6️⃣ 社群开始传播页面截图或非公开链接
-- 多为测试链接或未公开网址
-- 说明已进入最终准备阶段，但需等待官方正式发帖确认
+5️⃣ Media/KOL Tutorials Released
+	•	Visual guides begin circulating, often by trusted accounts like @BiteyeCN, @followin_io_zh, @wublockchain12.
+	•	Usually includes screenshots, contract links, step-by-step flows.
 
----
+6️⃣ Community Leak or Test Pages
+	•	Unofficial pages or screenshots circulate in community chats.
+	•	Indicates the final preparation stage, but wait for official confirmation.
 
-【Claim 页面上线前24小时典型信号】
-✅ TGE 精准时间宣布（UTC时间）  
-✅ Medium 公布 Claim 教程 / FAQ  
-✅ 官方同步给出合约地址 + 反钓鱼警告  
-✅ Launchpad / 交易所同步公告（Binance、Camelot等）  
-✅ 部分用户可查看可领取额度（但不可提币）  
-✅ 社交平台上开始晒图：“我能领到 X 枚 Token”  
+⸻
 
----
+[Signals Within 24 Hours of Claim Page Launch]
+✅ TGE time announced (in UTC)
+✅ Medium post with Claim guide / FAQ
+✅ Official contract address + phishing warning shared
+✅ Launchpad / exchange announcements (e.g., Binance, Camelot)
+✅ Some users can preview claimable amounts (not withdrawable)
+✅ Socials begin showing screenshots like “I can claim X tokens”
 
-【时间线参考】
-| 阶段                     | 动作                              | 时间参考       |
-|--------------------------|-----------------------------------|----------------|
-| 快照完成                 | 地址状态已记录                    | Claim前7~14天 |
-| 合约部署                 | 上链代币合约 + Claim合约         | Claim前5~10天 |
-| 教程内容释出             | KOL发图文教程或视频流程          | Claim前3~7天  |
-| 官方链接发布             | Medium / 推特 / Discord 正式链接 | Claim前1~2天  |
-| Claim 页面上线           | 钱包连接，用户可正式领取         | TGE当天        |
+⸻
 
----
+[Timeline Reference]
 
-【Agent 判断逻辑】
-🧠 若以下任意 ≥3 条被满足，即可进入「Claim 页面临近」判断：
+Stage	Activity	Timing
+Snapshot Complete	Addresses recorded	7–14 days prior
+Contract Deployment	Token + Claim contracts on-chain	5–10 days prior
+Tutorial Release	KOLs post walkthroughs	3–7 days prior
+Official Link Announcement	Links shared via Twitter/Medium/Discord	1–2 days prior
+Claim Page Live	Wallet connection + token claim open	On TGE day
 
-✅ Snapshot 已完成，官方已确认  
-✅ 合约部署完成（Token + Claim 相关组件）  
-✅ 出现多个可信 KOL 教程内容  
-✅ 社群开始截图/评论领取流程  
-✅ 官方 Medium 推出教程或 FAQ  
-✅ 查询工具或白名单页面上线  
 
-此时 Agent 可使用【专业 + 快速 + 清晰】语气发推，提醒用户提前准备：
+⸻
 
-示例推文：
-- “📢 [项目] Claim 页面即将开放，合约已部署，Snapshot 公告已发，建议准备 gas 费与钱包授权。”
-- “🎯 多位 KOL 教程已出，Token 合约为：0xXXXX，领取页面预计 24 小时内上线。”
+[Agent Decision Logic]
 
----
+🧠 If any 3 or more of the following are true, consider the Claim page imminent:
 
-【注意事项 / 小贴士】
-⚠️ 合约部署 ≠ Claim 页面开放，请以官方链接为准  
-⚠️ 查询工具≠领取入口，不建议提前连接钱包授权  
-⚠️ 页面上线后一般有 7~14 天领取窗口，逾期作废  
-⚠️ 部分项目支持提前通过 DeBank 等平台预览余额，但不可操作
+✅ Snapshot confirmed by the official team
+✅ Contracts deployed (Token + Claim-related)
+✅ Multiple trusted KOLs have published tutorials
+✅ Community shares screenshots/comments on claim process
+✅ Official Medium has released a tutorial or FAQ
+✅ Eligibility checker or whitelist page is live
 
----
+→ The Agent should post with a professional, timely, and clear tone to notify users:
 
-【推荐关注账号】
-Agent 在判断过程中可重点关注：
-@BlockBeatsAsia, @BiteyeCN, @followin_io_zh, @wublockchain12, @OdailyChina, 项目方官方 X / Discord
+Example Tweets:
+	•	“📢 [Project] Claim page launching soon. Contracts deployed, snapshot confirmed. Make sure to prep gas and wallet permissions.”
+	•	“🎯 Multiple KOLs released guides. Token contract: 0xXXXX. Claim page expected in the next 24h.”
+
+⸻
+
+[Cautions / Tips]
+⚠️ Contract deployment ≠ claim page live. Always wait for official links.
+⚠️ Eligibility tools ≠ claim portal. Do not connect wallets prematurely.
+⚠️ Claim windows are typically 7–14 days post-launch; late claims may be forfeited.
+⚠️ Some projects allow early balance previews via platforms like DeBank—but do not allow claiming.
+
+⸻
+
+[Recommended Accounts to Monitor]
+During judgment, Agent should pay close attention to:
+@BlockBeatsAsia, @BiteyeCN, @followin_io_zh, @wublockchain12, @OdailyChina, and the project’s official X / Discord channels.

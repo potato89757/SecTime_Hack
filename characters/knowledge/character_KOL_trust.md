@@ -1,164 +1,170 @@
-【用途说明】
-本知识模块帮助 AI Agent 判断和识别 Web3 圈内 KOL（关键意见领袖）发布的信息质量。Web3 圈的消息流动非常迅速，但其中存在大量未验证、带有诱导性质的信息。Agent 必须根据以下标准来判断哪些 KOL 的推文值得转发、引用或总结，以提高信息的准确性，避免误导用户。
+[Purpose]
+This knowledge module is designed to help the AI Agent evaluate the quality and credibility of KOLs (Key Opinion Leaders) in the Web3 space. Since information flows quickly in this industry but is often unverified or misleading, the Agent must apply these standards to determine which KOL tweets are worth reposting, quoting, or summarizing — ensuring higher accuracy and avoiding misinformation.
 
----
+⸻
 
-【功能目的】
-- 辨别哪些 KOL 的消息来源可靠，适合直接引用。
-- 识别哪些 KOL 的内容属于“画饼”或缺乏验证，不能作为消息依据。
-- 判断哪些内容看似权威，实则未经过多方验证，避免误导。
+[Function Goals]
+	•	Identify KOLs with reliable information suitable for citation.
+	•	Detect when a KOL is merely hyping or lacks verification.
+	•	Prevent reliance on posts that appear authoritative but are not substantiated.
 
----
+⸻
 
-【功能应用场景】
-- 提供空投、TGE 或项目上线消息的真实性判断。
-- 辅助决策是否将某些 KOL 内容作为真实情报转发。
-- 提供给 Agent 用于实时动态分析和识别空投及 TGE 信息的可信度。
+[Application Scenarios]
+	•	Assessing the credibility of airdrop/TGE/project launch news.
+	•	Deciding whether to repost a KOL’s content as valid intelligence.
+	•	Supporting the Agent in live analysis of TGE/airdrop announcements.
 
----
+⸻
 
-【为什么需要判断 KOL 的发言质量？】
+[Why Assess KOL Content Quality?]
+Most Web3 Alpha info originates from X (Twitter). However, 80% of it is speculation or hype, while only 20% is verified, supported by data, on-chain activity, or official sources.
 
-Web3 圈的 Alpha 信息大多源于 Twitter(X),但其中 80% 是“瞎猜”、“画饼”,只有 20% 是基于数据、链上动作、项目官方信源的“可信信息”.
+The Agent must be able to:
+	•	Know which KOLs are reliable enough to cite or repost
+	•	Identify accounts only suitable for observation
+	•	Detect content that sounds authoritative but lacks verification
 
-Agent 必须具备基础判断能力,识别:
-- 哪些 KOL 的话可以引用、转发或总结;
-- 哪些账号只适合观察,不能直接作为依据;
-- 哪些内容看似权威,实则未验证;
+⸻
 
----
+[How to Judge a KOL’s Content Quality?]
 
-【如何判断一个 KOL 的发言质量？】
+Here are 5 traits of high-quality KOL tweets:
 
-以下是高质量 KOL 发言的 5 个判断标准:
+✅ 1. Includes Tutorials or Guides
+E.g., Galxe links, claim walkthroughs, contract addresses.
+→ Suggests the post is based on real testing or research.
 
-✅ 1. 附带教程 / 引导材料  
-- 例子:附上 Galxe 任务链接、Claim 流程截图、交互地址等  
-- 通常说明该内容为 KOL 实测或调研后发布,非仅转发
+✅ 2. Includes On-chain Data
+E.g., Dune dashboards, Debank screenshots, Etherscan contracts.
+→ Adds credibility and traceability.
 
-✅ 2. 引用链上数据  
-- 包括:Dune 图表截图、Debank 地址行为截图、etherscan 合约地址  
-- 可增强内容可信度,利于溯源判断
+✅ 3. Cites Official Sources
+E.g., links to project Medium, X, or Discord.
+→ Higher trust when quoting verified media or project teams.
 
-✅ 3. 引用项目官方渠道  
-- 如附带 Medium、官方 X、项目 Discord 的截图或链接  
-- 如果引用内容中包含官方 tag 或媒体认证内容,可信度更高
+✅ 4. Early Timing
+Good Alpha KOLs often share before official announcements.
 
-✅ 4. 发文时间靠前  
-- 高质量 Alpha KOL 通常在项目未正式宣布时就已预判(“我一小时前发了”、“合约刚部署”)
+✅ 5. Shared by Web3 Media
+If reposted by accounts like @BlockBeatsAsia, @OdailyChina, or @GoPlusSecurity, credibility is boosted.
 
-✅ 5. 媒体互动/转发  
-- 如果该推文被 @BlockBeatsAsia、@OdailyChina、@GoPlusSecurity 等媒体同步转发,可信度显著提高
+⸻
 
----
+[Behaviors That Indicate Low-Quality KOL Content]
 
-【相反,如果出现以下行为,Agent 应保持怀疑】
+🚩 1. Empty Buzzwords Only
+“Guaranteed airdrop,” “huge news in May,” no substance or sources.
 
-🚩 1. 重复空洞关键词:“马上空投”、“必发币”、“xx月大动作”但无任何资料  
-🚩 2. 发文全部附推荐码(Referral link)且无解释内容  
-🚩 3. 多为“蹭热度”:仅在话题榜项目下评论或复述  
-🚩 4. 未绑定链上或项目内容:没有合约、地址、链接、教程  
-🚩 5. 发文极频繁、语言煽动性强(“不做你就错过下一个 ARB”)
+🚩 2. Referral Links Spam
+Posts just share links with no explanation.
 
----
+🚩 3. Bandwagoning
+Only commenting on trending topics or quoting without analysis.
 
-【常见高可信关键词组合(用于识别TGE/空投预热)】
+🚩 4. No On-chain/Data Backing
+No contracts, links, screenshots, or instructions.
 
-这些关键词若由可信账号发布,可视为强信号:
+🚩 5. Excessive Posts with Hype Language
+E.g., “You’ll miss the next ARB if you don’t do this now.”
 
-| 场景         | 关键词组合                                |
-|--------------|--------------------------------------------|
-| 空投前兆     | snapshot、airdrop guide、claim soon、galxe上线 |
-| 公售前兆     | token launch、TGE confirmed、public sale、IDO soon |
-| 合约部署相关 | deployed、Etherscan、contract address、tokenomics |
-| 任务发布     | XP system、Zealy board、points program、Leaderboard |
-| 教程贴       | how to qualify、step-by-step、walkthrough、thread below 👇 |
+⸻
 
----
+[Common Trusted Keyword Combos (TGE/Airdrop Signals)]
 
-【KOL 与媒体“同时发”的判断逻辑】
+When posted by verified KOLs, the following words are strong indicators:
 
-🧠 如果 Agent 检测到以下组合,表示该信息极高可信度(可立即发布或转发):
+Context	Keyword Signals
+Airdrop Prep	snapshot, airdrop guide, claim soon, galxe live
+TGE Prep	token launch, TGE confirmed, public sale, IDO soon
+Contract	deployed, Etherscan, contract address, tokenomics
+Tasks	XP system, Zealy board, points program, Leaderboard
+Tutorials	how to qualify, step-by-step, walkthrough, thread below 👇
 
-✅ @BlockBeatsAsia、@OdailyChina、@wublockchain12 等中文媒体与 KOL(如 @BiteyeCN)同步发文  
-✅ 推文内含项目官方公告链接(Medium / Blog)  
-✅ 项目官方在 30 分钟内同步转发该推文  
-✅ 链上已部署对应合约(Etherscan 有记录)  
-✅ 教程类推文 + 媒体资讯同步出现
 
-📢 以上情况,Agent 可使用【高强度情报信号】的风格来转推或总结,建议用【简明 + 专业语气】直接播报.
+⸻
 
----
+[Logic for “KOL + Media” Sync Posts]
 
-【Agent 的判断与行为建议】
+🧠 When these conditions occur simultaneously, the info is highly reliable:
 
-🧠 若以下条件满足 ≥ 3 项,可直接发文或转推:
-- 推文含任务流程链接 / 图文教程;
-- 有 Dune / Debank / etherscan 数据支撑;
-- 被主流 Web3 媒体同步转发;
-- 与链上合约、项目 Discord、任务平台内容一致;
-- 发文时间早于项目官方公告(KOL提前判断);
+✅ Media accounts (e.g., @BlockBeatsAsia, @OdailyChina, @wublockchain12) and Alpha KOLs (e.g., @BiteyeCN) post the same news
+✅ Post contains official links (Medium, blog, Discord)
+✅ Project X account reposts the tweet within 30 minutes
+✅ Smart contract is already deployed (confirmed on Etherscan)
+✅ Tutorials and media coverage appear together
 
-🚨 若推文仅含煽动内容、推荐码刷屏、空泛语言、无引用依据 → 可忽略,避免误导用户.
+📢 In this case, the Agent can publish or repost the info using a strong, concise, and professional tone.
 
----
+⸻
 
-【推荐监控账号(可信)】
+[Agent’s Judgment & Action Guide]
 
-中文媒体:
-- @BlockBeatsAsia
-- @OdailyChina
-- @wublockchain12
-- @ChainCatcher_
-- @TechFlowPost
+🧠 If 3 or more of the following are true, Agent may repost or summarize:
+	•	Contains links or walkthroughs
+	•	Includes Dune/Debank/Etherscan data
+	•	Reposted by trusted Web3 media
+	•	Matches with project’s contract/task/Discord info
+	•	Tweet was made before the project’s official post
 
-中文教程型 KOL:
-- @BiteyeCN
-- @SoSoValue_CN
-- @followin_io_zh
-- @iamyourchaos
-- @ai_8684xtpa
+🚨 If the post only contains hype, spammed referral links, vague language, and lacks citations → ignore it to prevent misleading users.
 
-英文 Alpha 型:
-- @degenharambe
-- @0xfoobar
-- @cygaar
-- @0xWolverine
+⸻
 
----
+[Recommended KOLs to Monitor]
 
-【Agent 技巧:交叉验证术】
-1. 该账号发了 TGE/空投信息  
-2. 该信息是否也出现在项目官方 / Launchpad / 媒体处？  
-3. 是否有教程 / 合约 / 地址支持？  
-→ 若“交叉三点”验证通过,即为高可信情报,可转发.
+Chinese Media Accounts:
+	•	@BlockBeatsAsia
+	•	@OdailyChina
+	•	@wublockchain12
+	•	@ChainCatcher_
+	•	@TechFlowPost
 
-【推特账号质量的衡量方法】
+Chinese Tutorial KOLs:
+	•	@BiteyeCN
+	•	@SoSoValue_CN
+	•	@followin_io_zh
+	•	@iamyourchaos
+	•	@ai_8684xtpa
 
-一个是蓝 V follower 的数量和比例，另一个我常用来衡量账号质量的是 tweetscout 分数，背后的逻辑是「有多少用影响力的账号关注了你」
+English Alpha Accounts:
+	•	@degenharambe
+	•	@0xfoobar
+	•	@cygaar
+	•	@0xWolverine
 
-我自己是 539 分，follower 里面分数最高的 3 个是 Zeneca, Chris Dixon 和 GordonGoner
+⸻
 
-我经常用tweetscout来防止「被骗粉」: 突然一个几十万粉的大号来关注我，我想我何德何能；然后查了一下tweetscout, 发现还不到 200 分🤣 （但还真有不少 legit 的朋友中招的
+[Agent Skill: Cross-Verification Method]
+	1.	A KOL posts a TGE/airdrop tip
+	2.	Is this info also found on project’s official X, Launchpad, or media?
+	3.	Is there tutorial/data/contract support?
 
-单纯的粉丝量其实是一个「虚荣指标」，如果非要有一个北极星指标的话，蓝 V  follower 和 tweetscout 更代表了你的影响力
+→ If all 3 are verified → This is high-trust Alpha, okay to repost.
 
-我看到过不到万粉，但 tweetscout 接近 1000 的账号，那真的是「有点东西」
+⸻
 
-当然，我们是人，没必要把自己数字化，但合理的指标可以让你理清楚前进的方向
+[How to Measure Twitter Account Quality]
 
-以上内容来自：@starzqeth https://x.com/starzqeth/status/1910999108091072988
+TweetScout & other methods from @starzqeth:
+	•	Blue Check + Verified Follower Count
+	•	TweetScout Score: Measures how many influential users follow you.
+	•	Example: @starzqeth has a score of 539. Top followers: Zeneca, Chris Dixon, GordonGoner
+	•	Some <10K follower accounts have ~1000 score = very influential.
 
-也可以用这个链接去检测：https://app.tweetscout.io/
+Other ways to assess:
+	•	Verified Follower Proportion
+	•	Kaito Yappers Score
+	•	Content Depth: Especially within a niche.
+	•	Avg Post Engagement over 100 Days
+	•	Top 20 Posts by Views: Are they original or reposts? What themes?
+	•	Subjective “Vibe”: Does this person’s tone/voice feel authentic and valuable?
 
-也可以用以下：
+More from @Sea_Bitcoin.
 
-- Verified followers 数量及比例
-- Kaito Yappers 分数
-- Tweetscout 这样基于算法的分数，还有其它插件也有类似功能，比如算出有多少个 KOL 关注
-- 在某个具体赛道的研究深度以及产出的内容质量
-- 过去 100 天的平均每条 post 的 views, likes 数量
-- 一个人历史所有内容里，views 最高的 top 20 是关于什么赛道/主题的？是原创还是搬运的？
-- 其它更偏主观的判断和审美匹配度，比如一个人的内容调性是有味道的，这种味道是可以「闻」得到的
+Use tools like:
+🔗 https://app.tweetscout.io/
 
-来自：@Sea_Bitcoin
+⸻
+
+This knowledge module enables the Agent to judge KOLs like a seasoned Web3 analyst: validating insights with cross-data, engagement metrics, and ecosystem influence — ensuring trustworthy content curation and a professional Alpha reputation.

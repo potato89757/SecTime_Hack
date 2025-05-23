@@ -1,119 +1,133 @@
-【用途说明】
-本知识模块用于帮助 AI Agent 识别和预防假空投（Fake Airdrop）。假空投通常通过钓鱼网站、假合约、社交媒体诱导等方式进行诈骗，Agent 必须掌握识别技巧，避免误导用户或转发不真实信息。
+[Purpose]
+This knowledge module helps the AI Agent identify and prevent fake airdrops. Fake airdrops often use phishing websites, malicious contracts, and misleading social media promotions to scam users. The Agent must learn to recognize these scams to avoid misleading users or reposting false information.
 
----
+⸻
 
-【什么是假空投？】
-假空投是指诈骗者伪造项目发币、空投 Claim 页面或任务链接，诱导用户连接钱包、授权资产，进而进行盗币、转账、签名钓鱼等行为。
+[What Is a Fake Airdrop?]
+A fake airdrop is a scam in which attackers imitate legitimate project launches or claim pages to trick users into connecting wallets and authorizing transactions. The goal is to steal tokens or trick users into signing malicious messages.
 
-假空投的常见手段包括：
-- 冒充真实项目进行诈骗；
-- 使用推荐链接传播；
-- 仿冒真实官方 Logo 和域名；
-- 利用“刚上线，快来 Claim”制造紧迫感。
+Common tactics include:
+	•	Impersonating real projects
+	•	Spreading through referral links
+	•	Copying logos and domains of real projects
+	•	Creating urgency: “Live now, claim fast!”
 
----
+⸻
 
-【常见假空投手法类型】
+[Common Types of Fake Airdrops]
 
-1️⃣ 假 Claim 网站
-- 完美仿制真实项目 Claim 页面；
-- 用户连接钱包后要求签署恶意消息或进行无限授权。
+1️⃣ Fake Claim Websites
+	•	Perfect replicas of legitimate claim pages
+	•	Ask users to sign malicious messages or approve unlimited spending
 
-2️⃣ 冒牌合约诱导授权
-- Claim 时与钓鱼合约交互，合约伪装成 TokenClaim，但内含恶意函数（如 transferFrom）。
+2️⃣ Fake Contracts with Malicious Authorization
+	•	Claim page connects to phishing contracts disguised as token claimers
+	•	These include hidden transferFrom or exploit logic
 
-3️⃣ 钓鱼社群空投链接
-- 非官方群组或冒充管理员发布“限时空投”链接；
-- 常见话术：“5分钟内结束”、“错过就没有了”。
+3️⃣ Airdrop Links in Fake Social Channels
+	•	Non-official groups or fake admins sharing “limited time claim” links
+	•	Phrases like “Only 5 minutes left!” are common bait
 
-4️⃣ X 上热门空投标签蹭热度
-- 假账号发钓鱼链接，冒充官方 Claim 页面，评论区充斥“我已领取”虚假内容。
+4️⃣ Fake Accounts Hijacking Airdrop Hashtags on X
+	•	Posts fake claim links and pretends to be the official source
+	•	Comment sections filled with “I claimed!” bots or fake praise
 
----
+⸻
 
-【Agent 如何识别钓鱼风险？】
+[How Can the Agent Detect Phishing Risks?]
 
-✅ 以下行为可视为 **高风险钓鱼信号**：
+✅ The following are high-risk phishing indicators:
 
-🚩 **域名异常**（非官方主域）
-- 例如：www.arbi-drop.io（假） vs www.arbitrum.foundation（真）
+🚩 Suspicious Domain Names
+e.g. www.arbi-drop.io (fake) vs www.arbitrum.foundation (real)
 
-🚩 **无官方或主流媒体转发**
-- 若 Claim 页面没有官方确认、主流媒体如 BlockBeatsAsia 等的报道，需警惕。
+🚩 No Official or Media Reposts
+If a claim page isn’t confirmed by the official account or reposted by trusted media, stay cautious
 
-🚩 **钱包授权提示异常**
-- 如果连接钱包时提示“发起签名请求”且未告知用途，用户应谨慎拒绝。
+🚩 Unexpected Wallet Prompts
+A request to sign with no explanation is suspicious and should be denied
 
-🚩 **合约未开源**
-- 合约没有开源，无法验证代币的分发规则或逻辑，存在安全隐患。
+🚩 Contract Is Not Open-Sourced
+If the contract is not verified or open-source, it’s impossible to check token logic or risks
 
-🚩 **直接连接钱包+签名**
-- 正常项目会有详细任务指导和说明，不应仅要求直接签名。
+🚩 Connect Wallet + Sign Immediately
+Legit projects provide clear instructions. Beware if a site asks for wallet connection and signature right away
 
----
+⸻
 
-【真实 Claim 页面通常具备的 5 项特征】
+[Features of Real Claim Pages]
 
-✅ 1. **来源明确**（项目官方 X、Medium、Launchpad、媒体同步发布）  
-✅ 2. **合约地址公开**（Etherscan/Arbiscan 上可查，开源合约）  
-✅ 3. **教程与 KOL 解读**（官方教程、主流 KOL 分享）  
-✅ 4. **页面信息完整**（代币名称、规则说明、FAQ）  
-✅ 5. **Claim 操作简单**（仅连接钱包，不需要额外授权代币）
+✅ 1. Official Source
+Shared via project’s X, Medium, launchpad, or media channels
 
----
+✅ 2. Contract Is Publicly Available
+Token + distributor contracts verified on Etherscan/Arbiscan
 
-【Agent 安全建议行为】
+✅ 3. Tutorials and KOL Posts Available
+Real claim pages are often accompanied by guides from credible KOLs
 
-🧠 当发现以下情况，Agent 应 **拒绝转发 + 发布预警内容**：
+✅ 4. Clear On-Page Information
+Includes token name, distribution rules, FAQ, etc.
 
-❌ **域名可疑**（拼写异常、主域不一致）  
-❌ **页面要求授权/签名**，未明确用途  
-❌ **无官方确认**（无项目官方账号或主流媒体同步报道）  
-❌ **评论区“已领取”全是虚假号**
+✅ 5. Simple Claim Process
+Only requires wallet connection—no token approval
 
-📢 示例预警推文：
+⸻
 
-> ⚠️ 疑似假空投警告：目前流传的“ABC Claim”页面未被官方转发，合约未开源，建议勿授权！如需真实页面，请关注项目官方推特或媒体平台。
+[Agent Recommended Security Behavior]
 
----
+🧠 If you detect the following, do not repost and issue a warning instead:
 
-【常见假空投平台特征】
+❌ Suspicious or misspelled domain
+❌ Page asks for signature/approval without explanation
+❌ No confirmation from official channels
+❌ Comment section filled with fake “I claimed!” messages
 
-| 特征            | 判断方式                              |
-|-----------------|---------------------------------------|
-| 域名异常        | 如 .xyz / .io / .vip 开头，不常见平台主域 |
-| 不可信链接来源  | 来自非官方群组、转发号、不熟悉账号        |
-| 合约未开源      | 无法看到 transfer / approve 结构      |
-| 签名弹窗诱导    | MetaMask 出现“approve for all”警告    |
-| 评论区“已领取”  | 尤其是全是机器号或网红头像             |
+📢 Example Warning Post:
 
----
+⚠️ Suspected Fake Airdrop Alert: The current “ABC Claim” page has not been confirmed by official sources. Contract is not verified. Do not approve! For the real claim page, follow the project’s official X or media platforms.
 
-【安全辅助工具推荐】
+⸻
 
-| 工具            | 功能                             |
-|-----------------|----------------------------------|
-| GoPlusSecurity (@GoPlusSecurity) | 智能合约风险检测，钓鱼域名报告         |
-| revoke.cash     | 查看并撤销钱包授权                 |
-| etherscan.io    | 查看合约是否开源，是否认证           |
-| RugDoc          | 判断是否为钓鱼合约（DeFi/NFT）    |
-| Scam Sniffer    | 链上行为反钓鱼浏览器插件           |
+[Common Traits of Fake Airdrop Sites]
 
----
+Red Flag	Description
+Strange domain name	Ends in .xyz / .io / .vip; doesn’t match project
+Unreliable link source	Shared from unknown channels or accounts
+Unverified contract	No access to transfer/approve function visibility
+Signature popup bait	MetaMask popup shows “approve for all” warning
+Fake engagement	Comment section filled with bots or fake influencers
 
-【Agent 提醒句式建议】
 
-✅ **消息可信时**：
-> “⚠️ 注意：该 Claim 页面未被官方渠道转发，疑似钓鱼链接，建议勿连接钱包。”
+⸻
 
-⚠️ **消息未验证但值得关注时**：
-> “🚨 该合约未开源，调用 transferFrom 函数，可能存在资产风险。”
+[Recommended Security Tools]
 
-✅ **真实 Claim 页面**：
-> “✅ 真实 Claim 页面通常附有 Medium 教程、Launchpad 联动，请注意甄别来源。”
+Tool	Use Case
+GoPlusSecurity (@GoPlusSecurity)	Smart contract scanner + phishing domain alerts
+revoke.cash	View & revoke wallet token approvals
+etherscan.io	Check if contracts are verified and safe
+RugDoc	Check for scam risks in DeFi/NFT contracts
+Scam Sniffer	Browser extension for phishing detection
 
----
 
-【总结】
-Agent 在处理空投与 TGE 消息时，需要综合链上验证、官方确认、社群活动等信息，通过交叉验证确保消息的可靠性，避免误导用户参与假空投。 
+⸻
+
+[Suggested Alert Phrases for the Agent]
+
+✅ When the message is suspicious:
+
+“⚠️ Warning: This claim page is not shared by official channels. It may be a phishing link. Do not connect your wallet.”
+
+⚠️ When the message is unverified but notable:
+
+“🚨 This contract is not verified and includes transferFrom logic. Proceed with caution—your assets may be at risk.”
+
+✅ When the claim page is legitimate:
+
+“✅ Verified claim pages usually come with a Medium tutorial and are officially launched via Launchpad or X. Always check the source.”
+
+⸻
+
+[Conclusion]
+When handling airdrop or TGE news, the Agent must cross-verify against on-chain data, official confirmation, and community behavior to ensure reliability. This prevents users from falling for fake airdrops or phishing campaigns.

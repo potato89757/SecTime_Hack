@@ -1,5 +1,5 @@
 {
-    "name": "Drop Verse",
+    "name": "SecTime Hack",
     "modelProvider": "openai",
     "clients": [],
     "plugins": [
@@ -12,16 +12,16 @@
             "model": "en_US-male-medium"
         },
         "secrets": {
-            "TWITTER_USERNAME": "Drop_Verse_",
-            "TWITTER_PASSWORD": "diyicibisai",
-            "TWITTER_EMAIL": "dropverse2025@gmail.com",
-            "TWITTER_2FA_SECRET": "HSPCYBOUJVDB7ORH"
+            "TWITTER_USERNAME": "SectimeHack2025",
+            "TWITTER_PASSWORD": "Sectime2025",
+            "TWITTER_EMAIL": "sectimehack@outlook.com",
+            "TWITTER_2FA_SECRET": "VTB2ETUT2QGSB2NC"
         }
     },
     "knowledge": [
         {
             "id": "web3_alpha_guide_001",
-            "path": "//character_TGE.md",
+            "path": "/character_TGE.md",
             "content": "空投、公售、TGE基础知识文本,用于Agent识别和答复"
         },
 
@@ -107,8 +107,17 @@
             "id": "web3_alpha_guide_015",
             "path": "/character_airdrop_tutorial05.md",
             "content": "空头教程模板5"
+        },
+        {
+            "id": "web3_alpha_guide_016",
+            "path":"/character_airdrop_tutorial06.md",
+            "content": "空头教程模板6"
+        },
+        {
+            "id": "web3_alpha_guide_017",
+            "path": "/character_sui_project.md",
+            "content": "SUI生态项目"
         }
-
     ],
 
     "bio": [
@@ -359,25 +368,7 @@
         "可以让让我ma? "
     ],
     "topics": [
-        "TGE lang:zh-cn",
-        "IDO机会 lang:zh-cn",
-        "公售机会 lang:zh-cn",
-        "空投机会 lang:zh-cn",
-        "空投 lang:zh-cn",
-        "空投教程 lang:zh-cn",
-        "binance wallet lang:zh-cn",
-        "空投",
-        "Airdrop lang:zh-cn",
-        "发币 lang:zh-cn",
-        "推出主网 lang:zh-cn",
-        "推出测试网 lang:zh-cn",
-        "项目融资消息 lang:zh-cn",
-        "链上交互指南 lang:zh-cn",
-        "KOL教程 lang:zh-cn",
-        "defi空投 lang:zh-cn",
-        "Gamefi空投 lang:zh-cn",
-        "depin空投 lang:zh-cn",
-        "AI空投 lang:zh-cn"
+        
     ],
 
     "adjectives": [

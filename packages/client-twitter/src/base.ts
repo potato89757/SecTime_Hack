@@ -114,8 +114,9 @@ export class ClientBase extends EventEmitter {
         return cached;
     }
 
+    
     async getTweet(tweetId: string): Promise<Tweet> {
-        const cachedTweet = await this.getCachedTweet(tweetId);
+        const cachedTweet = await this.getCachedTweet(tweetId); //这句话在讲可以获取用户的推文，所以不需要特地点进去用户的account
 
         if (cachedTweet) {
             return cachedTweet;
@@ -770,6 +771,42 @@ export class ClientBase extends EventEmitter {
         } catch (error) {
             console.error("Error fetching Twitter profile:", error);
             throw error;
+        }
+    }
+
+    // create new
+    async fetchUserTweets(username: string, count: number): Promise<QueryTweetsResponse> {
+        try {
+            // First verify if the user exists
+            try {
+                await this.twitterClient.getProfile(username);
+            } catch (error) {
+                elizaLogger.warn(`User ${username} not found or inaccessible`);
+                return { tweets: [], cursor: undefined } as QueryTweetsResponse;
+            }
+
+            const tweets = await this.requestQueue.add(async () => {
+                const tweets = await this.twitterClient.getTweets(username, count);
+                const parsedTweets = [];
+                const twoDaysAgo = Date.now() - (2 * 24 * 60 * 60 * 1000); // 2 days ago in milliseconds
+
+                for await (const tweet of tweets) {
+                    const parsedTweet = this.parseTweet(tweet);
+                    // Check if tweet is within last 2 days
+                    if (parsedTweet.timestamp && parsedTweet.timestamp * 1000 >= twoDaysAgo) {
+                        parsedTweets.push(parsedTweet);
+                    }
+                }
+                return parsedTweets;
+            });
+
+            return {
+                tweets,
+                cursor: undefined
+            } as QueryTweetsResponse;
+        } catch (error) {
+            elizaLogger.error(`Error fetching user tweets for ${username}:`, error);
+            return { tweets: [], cursor: undefined } as QueryTweetsResponse;
         }
     }
 }

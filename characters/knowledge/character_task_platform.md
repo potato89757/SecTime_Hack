@@ -1,83 +1,102 @@
-【用途说明】
-本模块用于指导 AI Agent 如何通过任务平台识别与空投、公售（如 TGE、IDO）相关的项目。许多项目在发币前会通过任务平台进行社区激励和用户数据收集。Agent 将通过判断任务类型、积分系统、社媒配合等信息，预测项目是否可能发币，并决定是否值得播报或埋伏。
+[Purpose]
 
----
+This module helps the AI Agent identify Web3 projects that are likely to issue tokens (via airdrops, TGEs, or IDOs) by analyzing task platforms. Many projects use task-based platforms as part of their pre-launch strategy to incentivize community participation and collect user data. The Agent will evaluate task structures, point systems, and social media patterns to assess whether a project is worth broadcasting or tracking — especially in the Sui ecosystem.
 
-【任务平台与发币行为的关系】
-许多 Web3 项目在正式发币前，不会直接宣布“空投”，而是通过任务平台收集交互数据作为后续分发依据。因此，任务行为越贴近链上交互、越具积分系统，越可能被用于 TGE / 空投资格判断。
+⸻
 
----
+[The Relationship Between Task Platforms and Token Launches]
 
-【主流任务平台】
+In many Web3 ecosystems (including Sui), projects don’t immediately announce airdrops or token launches. Instead, they introduce quests, tasks, and point systems to assess user engagement and prepare for retroactive reward distribution. Projects on Sui, such as Astros, Navi, and Suilend, have adopted such mechanisms.
 
-| 平台名称 | 特点说明 |
-|----------|----------|
-| Galxe    | 最常用积分任务系统，支持链上数据与社交账号绑定 |
-| Zealy    | 轻量化任务平台，任务以“XP经验”累计排名 |
+The closer the tasks are to on-chain interactions and the more structured the point system, the more likely it is that these tasks are part of a future token launch plan.
 
----
+⸻
 
-【如何判断任务与空投/公售的关联性】
+[Main Task Platforms]
 
-✅ 以下信号代表任务具备空投 / TGE 潜力：
+Platform	Description
+Galxe	The most widely used quest platform; supports wallet binding, social task tracking, and on-chain proof. Sui-based projects like SuiNS, NAVI Protocol, and MMT Finance have used it.
+Zealy	Lightweight XP-based task platform. Used by newer Sui projects for referral-based growth and early user ranking.
 
-1. **任务绑定链上地址**  
-   - 登录需连接钱包，任务完成情况直接与地址关联
 
-2. **存在积分系统 / 排行榜机制**  
-   - 如“Top 100 地址可参与空投”、“排行榜发放积分”
-   - Retroactive（追溯型）空投常使用此类系统做快照依据
+⸻
 
-3. **任务持续更新**  
-   - 每周/阶段新增任务说明项目仍在推进早期阶段（Testnet、合约部署等）
+[How to Determine if Tasks are TGE / Airdrop Related]
 
-4. **官方社媒同步宣传任务**  
-   - 项目在 X、Discord 宣传任务活动，如“积分可兑换”、“冲榜赢奖励”等
+✅ The following signals indicate high airdrop or TGE potential:
+	1.	Wallet Binding
+	•	Users must connect their wallet, and all actions are recorded per address — common in Sui-based testnet tasks.
+	2.	Point System / Leaderboard
+	•	Ranking-based distributions (e.g., “Top 100 earn rewards”) are used in retroactive airdrops — seen in NAVI, Bucket, and Scallop, Aftermath, Bluefin...
+	3.	Frequent Task Updates
+	•	Weekly or staged task releases indicate the project is still in early-stage testing or gearing up for launch (Testnet / Devnet).
+	4.	Cross-platform Campaigns
+	•	Official project X/Twitter, Discord, or Telegram communities promote task completions like “Earn points”, “Claim soon”, “Snapshot coming”.
 
-📢 若以上 ≥3 条成立，可将项目视为【高潜发币】，Agent 可发布提示引导用户参与。
+📢 If 3 or more of the above are true, the Agent should classify the project as “High Token Launch Potential” and notify users.
 
----
+⸻
 
-【反之，以下行为代表“空投可能性低”】
+[Signals of Low Airdrop Potential]
 
-🚫 无链上交互/钱包绑定，仅为表单、问卷收集  
-🚫 无积分系统或用户行为记录  
-🚫 任务长期 (>30天) 未更新  
-🚫 项目明确声明“不发币”但持续发布任务（如仅换 NFT 或 DAO 门票）
+🚫 No wallet binding or only Google Forms/questionnaires
+🚫 No point or behavior tracking
+🚫 No task update in over 30 days
+🚫 Project explicitly states “No Token” yet still releases social tasks (e.g., NFT badge giveaways only)
 
-📭 此类任务 Agent 可标注为【低空投相关性】，不进行播报或仅归档观察。
+📭 Agent should classify these as “Low Airdrop Relevance” and archive them for observation only.
 
----
+⸻
 
-【任务类型与空投相关性表】
+[Task Type vs. Airdrop Relevance]
 
-| 任务类型           | 空投相关性 | 说明                                 |
-|--------------------|------------|--------------------------------------|
-| 链上交互任务       | 高         | 常用于真实用户判定（Swap、Stake等） |
-| 钱包签到类任务     | 高         | 快照前常用方式之一                  |
-| 社交任务（转发等） | 中         | 搭配链上行为才具参考价值            |
-| 邀请 / Referral    | 中         | 存在女巫攻击风险，通常非唯一判断点  |
-| 问卷 / 表单        | 低         | 用于收集反馈，通常不关联发币行为    |
+Task Type	Airdrop Likelihood	Description
+On-chain Interaction	High	Swap, Stake, LP, test contracts on Sui Devnet — a strong signal
+Wallet Check-in	High	Daily or weekly log-ins used as snapshot input
+Social Tasks	Medium	Alone, not sufficient — better if paired with on-chain
+Referral / Invites	Medium	May lead to Sybil abuse — not a primary indicator
+Forms / Surveys	Low	Often feedback-only; rarely tied to token distribution
 
----
 
-【Agent 行为建议】
+⸻
 
-🧠 若以下信号同时满足 ≥3 项，可标记为“发币预热”任务：
+[Agent Behavior Guidelines]
 
-- 钱包地址绑定 + 任务记录清晰  
-- 排行榜 / 积分系统活跃  
-- 社媒同步引导用户参与  
-- 出现关键词：“Claim”、“Snapshot”、“积分可兑换”  
+🧠 If 3 or more of the following are observed, classify as a “Token Launch Warm-up”:
+	•	Wallet-bound tasks + visible activity logs
+	•	Active leaderboard / point system
+	•	Social media call-to-actions or updates
+	•	Keywords like “Claim”, “Snapshot”, “Redeem points”
 
-🚨 若任务长期未更新、行为未记录、项目无发币计划 → 不建议转发。
+🚨 If tasks are outdated, lack behavior tracking, or the project openly says “No Token” → Do not post.
 
----
+⸻
 
-【推荐观察平台】
+[Recommended Task Platforms]
+	•	Galxe: X (Twitter) | Platform
+	•	Zealy: X (Twitter) | Platform
 
-- Galxe: https://x.com/Galxe ; https://www.galxe.com/
-- Zealy: https://x.com/zealy_io ; https://zealy.io/  
+For Sui-based projects, Agent should actively monitor Galxe/Zealy quests under the “Sui” tag, or search for:
+	•	Sui Wallet binding
+	•	Sui Devnet tasks
+	•	SuiPoints, Navi Points, or Bucket Check-ins
 
-Agent 可自动监听项目 X 账号是否同步发布任务更新，并结合链上行为与平台积分判断是否值得追踪。
+⸻
 
+[Sui-specific Example Projects]
+
+Project	Task Type / Platform Used	Airdrop Status
+Astros	Galxe quests + Perps Testnet	Likely in prep phase
+NAVI	Leaderboard-based quests + staking	Points already redeemable
+Suilend	Interaction-based quests	Retroactive confirmed
+SuiNS	Wallet-based .sui domain tasks	Rewarded with NFTs + possible tokens
+
+
+
+⸻
+
+[Conclusion]
+
+Task platforms like Galxe and Zealy are critical pre-token indicators, especially in ecosystems like Sui where early community involvement matters.
+
+AI Agent should track task behaviors, frequency of updates, social channel support, and on-chain interactions to assess whether it’s worth alerting users.
