@@ -1044,7 +1044,7 @@ export class TwitterPostClient {
                 - Each paragraph ≤ 60 characters, emphasizing event background and the author's stance
                 - Tone neutral and professional, appropriately guiding users to note project potential or risks
                 - Do not quote tweets verbatim; extract key points and convey the core message
-                - Ensure total character count ≤ 180 (this is the most important)
+                - Ensure total character count ≤ 180 (this is the most important), in english
                 Please generate the summary based on the following content:
                 ${combinedText}
             `; 
