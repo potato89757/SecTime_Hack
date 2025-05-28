@@ -4,7 +4,7 @@
 </div>
 <div align="center">
 
-[Documentation](https://docs.google.com/presentation/d/1NkfXmz3i9oofgHAdzOU6U_QLA4uY2wPO/edit?usp=drive_link&ouid=101678135022246621628&rtpof=true&sd=true) 📜 | [Demo](https://drive.google.com/file/d/1nWNBhW-u-9jdRZxuYXuw-UoBKFSwWHUm/view?usp=drive_link) 📹 | [English Version](./README.md) 🏴󠁧󠁢󠁥󠁮󠁧󠁿
+[Twitter](https://x.com/SectimeHack2025) 𝕏 | [Documentation](https://docs.google.com/presentation/d/1NkfXmz3i9oofgHAdzOU6U_QLA4uY2wPO/edit?usp=drive_link&ouid=101678135022246621628&rtpof=true&sd=true) 📜 | [Demo](https://drive.google.com/file/d/1nWNBhW-u-9jdRZxuYXuw-UoBKFSwWHUm/view?usp=drive_link) 📹 | [English Version](./README.md) 🏴󠁧󠁢󠁥󠁮󠁧󠁿
 </div>
 
 ## 1. 背景：信息洪流中的机会错失
