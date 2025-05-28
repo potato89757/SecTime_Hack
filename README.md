@@ -30,6 +30,9 @@ Enter **SuiBobi** —
 |Auto Summaries | Distills key points, prevents info overload | “Three retweets → one summary” cadence |
 Humanized Meme Presence | Border-collie avatar + meme culture | Boosts engagement and reach |
 
+<img src="./images/image1.png">
+<img src="./images/image2.png">
+
 ## 4. $BOBI: Giving a Meme Coin Real Purpose
 
 Beyond intel, SuiBobi issues **$BOBI**:
