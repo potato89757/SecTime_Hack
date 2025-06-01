@@ -114,6 +114,16 @@ export class TwitterSearchClient {
     private async engageWithSearchTerms() {
         elizaLogger.log("Engaging with search terms");
         try {
+
+            if (!this.runtime.character.topics || this.runtime.character.topics.length === 0) {
+                elizaLogger.error("错误：没有可用的搜索关键词，尝试重新初始化");
+                await this.refreshSearchTopics();
+                if (!this.runtime.character.topics || this.runtime.character.topics.length === 0) {
+                  elizaLogger.error("错误：重新初始化后仍无有效关键词");
+                  return;
+                }
+            }
+
             let searchUsername = [...this.runtime.character.topics][
                 this.searchIndex
             ];
