@@ -11,38 +11,155 @@ function extractUsername(url: string | null): string | null {
   return match ? match[1] : null;
 }
 
+// Helper function to wait
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Helper function to retry operations
+async function retry<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  delay: number = 2000
+): Promise<T> {
+  let lastError: Error;
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error as Error;
+      console.log(`Attempt ${i + 1} failed: ${error.message}`);
+      if (i < maxRetries - 1) {
+        await wait(delay);
+      }
+    }
+  }
+  throw lastError!;
+}
+
 export async function scrapeSuiTwitterUsernames(): Promise<string[]> {
   const browser = await puppeteer.launch({ 
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    headless: false, // 改为有头模式，方便调试
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-web-security',
+      '--disable-features=IsolateOrigins,site-per-process',
+      '--window-size=1920,1080'
+    ],
+    defaultViewport: {
+      width: 1920,
+      height: 1080
+    }
   });
+
   const page = await browser.newPage();
+  
+  // 设置更真实的用户代理
+  await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+  
+  // 设置更多的浏览器行为
+  await page.setExtraHTTPHeaders({
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+  });
+
   const usernames = new Set<string>();
 
   try {
     // 设置页面超时时间
-    await page.setDefaultNavigationTimeout(30000);
-    await page.setDefaultTimeout(30000);
+    await page.setDefaultNavigationTimeout(120000); // 增加到120秒
+    await page.setDefaultTimeout(120000); // 增加到120秒
 
     // 访问页面并等待加载
     console.log('Navigating to page...');
-    await page.goto(url, { waitUntil: 'networkidle0' });
-    await page.waitForTimeout(5000);
-
+    await retry(async () => {
+      await page.goto(url, { 
+        waitUntil: ['networkidle0', 'domcontentloaded'],
+        timeout: 120000 
+      });
+    });
+    
+    // 等待页面完全加载
+    await wait(10000);
+    
+    // 检查页面内容
+    const pageContent = await page.content();
+    console.log('Page loaded, checking content...');
+    
     // 等待并点击解锁按钮
     console.log('Looking for unlock button...');
-    const unlockButton = await page.waitForSelector('.btn.v-btn.v-btn--has-bg.theme--light.v-size--default', { timeout: 10000 });
+    const unlockButton = await retry(async () => {
+      const button = await page.waitForSelector('.btn.v-btn.v-btn--has-bg.theme--light.v-size--default', { 
+        timeout: 30000,
+        visible: true 
+      });
+      if (!button) {
+        throw new Error('Unlock button not found');
+      }
+      return button;
+    });
+
     if (unlockButton) {
       await unlockButton.evaluate((btn) => btn.scrollIntoView());
-      await page.waitForTimeout(1000);
+      await wait(2000);
       await unlockButton.click();
-      await page.waitForTimeout(2000);
+      await wait(5000);
     }
 
     // 等待登录表单加载
     console.log('Waiting for login form...');
-    await page.waitForSelector('input[type="email"]', { timeout: 10000 });
-    await page.waitForSelector('input[type="password"]', { timeout: 10000 });
+    await retry(async () => {
+      // 尝试多种选择器
+      const selectors = [
+        'input[type="email"]',
+        'input[name="email"]',
+        'input[placeholder*="email" i]',
+        'input[placeholder*="邮箱" i]'
+      ];
+      
+      for (const selector of selectors) {
+        try {
+          console.log(`Trying selector: ${selector}`);
+          const element = await page.waitForSelector(selector, {
+            timeout: 30000,
+            visible: true
+          });
+          if (element) {
+            console.log(`Found element with selector: ${selector}`);
+            return element;
+          }
+        } catch (e) {
+          console.log(`Selector ${selector} failed: ${e.message}`);
+        }
+      }
+      throw new Error('No email input found with any selector');
+    });
+
+    // 等待密码输入框
+    await retry(async () => {
+      const selectors = [
+        'input[type="password"]',
+        'input[name="password"]',
+        'input[placeholder*="password" i]',
+        'input[placeholder*="密码" i]'
+      ];
+      
+      for (const selector of selectors) {
+        try {
+          console.log(`Trying password selector: ${selector}`);
+          const element = await page.waitForSelector(selector, {
+            timeout: 30000,
+            visible: true
+          });
+          if (element) {
+            console.log(`Found password element with selector: ${selector}`);
+            return element;
+          }
+        } catch (e) {
+          console.log(`Password selector ${selector} failed: ${e.message}`);
+        }
+      }
+      throw new Error('No password input found with any selector');
+    });
 
     // 输入登录信息
     console.log('Entering login credentials...');
@@ -51,26 +168,57 @@ export async function scrapeSuiTwitterUsernames(): Promise<string[]> {
 
     // 点击登录按钮
     console.log('Clicking login button...');
-    const signInButton = await page.waitForSelector('button[type="submit"]', { timeout: 10000 });
+    const signInButton = await retry(async () => {
+      const selectors = [
+        'button[type="submit"]',
+        'button:contains("登录")',
+        'button:contains("Login")',
+        'button.v-btn'
+      ];
+      
+      for (const selector of selectors) {
+        try {
+          console.log(`Trying submit button selector: ${selector}`);
+          const element = await page.waitForSelector(selector, {
+            timeout: 30000,
+            visible: true
+          });
+          if (element) {
+            console.log(`Found submit button with selector: ${selector}`);
+            return element;
+          }
+        } catch (e) {
+          console.log(`Submit button selector ${selector} failed: ${e.message}`);
+        }
+      }
+      throw new Error('No submit button found with any selector');
+    });
+
     if (signInButton) {
       await signInButton.click();
-      await page.waitForTimeout(5000);
+      await wait(10000); // 增加登录后的等待时间
     }
 
     // 等待并点击 Exclusive 按钮
     console.log('Looking for exclusive button...');
-    const exclusiveButtons = await page.$$('.btn.v-btn.v-btn--text.theme--light.v-size--default');
+    const exclusiveButtons = await retry(async () => {
+      return await page.$$('.btn.v-btn.v-btn--text.theme--light.v-size--default');
+    });
+
     if (exclusiveButtons.length > 1) {
       await exclusiveButtons[1].evaluate((btn) => btn.scrollIntoView({ block: 'center' }));
       await exclusiveButtons[1].click();
-      await page.waitForTimeout(2000);
+      await wait(5000);
     }
 
     // 收集项目链接
     console.log('Collecting project links...');
     const projectLinks: string[] = [];
     for (let i = 0; i < 4; i++) {
-      const projects = await page.$$('div.project_list > div.project');
+      const projects = await retry(async () => {
+        return await page.$$('div.project_list > div.project');
+      });
+
       for (const project of projects) {
         const statusIcons = await project.$$('img.status_icon');
         let skip = false;
@@ -88,20 +236,26 @@ export async function scrapeSuiTwitterUsernames(): Promise<string[]> {
         const projectLink = await (await linkElement.getProperty('href')).jsonValue() as string;
         projectLinks.push(projectLink);
       }
+
       const nextButton = await page.$('.btn-next');
       if (!nextButton) break;
       const className = await (await nextButton.getProperty('className')).jsonValue() as string;
       if (className.includes('disabled')) break;
       await nextButton.click();
-      await page.waitForTimeout(3000);
+      await wait(5000);
     }
 
     // 处理每个项目
     console.log('Processing projects...');
     for (const projectLink of projectLinks) {
       console.log(`Processing project: ${projectLink}`);
-      await page.goto(projectLink, { waitUntil: 'networkidle0' });
-      await page.waitForTimeout(3000);
+      await retry(async () => {
+        await page.goto(projectLink, { 
+          waitUntil: ['networkidle0', 'domcontentloaded'],
+          timeout: 120000 
+        });
+      });
+      await wait(5000);
 
       const twitterElement = await page.$('a.chips.d-flex.align-center.justify-center');
       const projectTwitterUrl = twitterElement ? await (await twitterElement.getProperty('href')).jsonValue() as string : null;
@@ -115,8 +269,13 @@ export async function scrapeSuiTwitterUsernames(): Promise<string[]> {
         try {
           const profileUrl = await (await card.getProperty('href')).jsonValue() as string;
           const profilePage = await browser.newPage();
-          await profilePage.goto(profileUrl, { waitUntil: 'networkidle0' });
-          await profilePage.waitForTimeout(1000);
+          await retry(async () => {
+            await profilePage.goto(profileUrl, { 
+              waitUntil: ['networkidle0', 'domcontentloaded'],
+              timeout: 120000 
+            });
+          });
+          await wait(2000);
 
           const twitterAnchor = await profilePage.$('a[href*="x.com"]');
           const twitterUrl = twitterAnchor ? await (await twitterAnchor.getProperty('href')).jsonValue() as string : null;

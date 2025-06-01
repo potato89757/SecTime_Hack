@@ -77,11 +77,11 @@ export class TwitterSearchClient {
     // new implementation
     private async refreshSearchTopics() {
         try {
-            const topics1 = await scrapeSuiTwitterUsernames();
+            //const topics1 = await scrapeSuiTwitterUsernames();
             const topics2 = await scrapeProjectUpdates();
             this.runtime.character.topics = Array.from(new Set([
             ...this.runtime.character.topics,
-            ...topics1,
+            //...topics1,
             ...topics2
             ]));
             elizaLogger.log("Search topics initialized");
